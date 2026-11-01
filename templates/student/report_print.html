@@ -1,8 +1,8 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Official Academic Performance Report â€“ {{ summary.student.roll_no }}</title>
+  <title>Mohan Babu University - Academic Report - {{ summary.student.roll_no }}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}">
   <style>
     /* Screen display styles */
@@ -147,9 +147,10 @@
   <!-- Official Transcript Page Sheet -->
   <div class="print-page">
     <div class="transcript-header">
-      <div class="inst-name">{{ settings.site_title|default('EduTrack') }} Academic Complex</div>
-      <div style="font-size: 12px; margin-top: 2px; color: #444;">Affiliated Collegiate Performance Registry</div>
-      <div class="transcript-title">Official Student Performance Transcript &amp; Grade Report</div>
+      <div class="inst-name" style="font-size: 24px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: #111;">Mohan Babu University</div>
+      <div style="font-size: 13px; margin-top: 3px; color: #555; font-weight: 600;">Autonomous Institution &bull; Deemed-to-be University</div>
+      <div style="font-size: 11px; margin-top: 1px; color: #777;">Tirupati, Andhra Pradesh, India</div>
+      <div class="transcript-title" style="margin-top: 10px; font-size: 14px; font-weight: 700; color: #222; border-top: 1px solid #ddd; padding-top: 6px;">OFFICIAL STUDENT PERFORMANCE TRANSCRIPT &amp; GRADE REPORT</div>
     </div>
 
     <!-- Student Metadata -->

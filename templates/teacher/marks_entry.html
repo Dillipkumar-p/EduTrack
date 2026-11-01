@@ -118,6 +118,11 @@
       {% if selected_exam or selected_subject or selected_section %}
         <a href="{{ url_for('teacher.marks') }}" class="btn btn-outline btn-sm" style="font-size: 0.8rem; padding: 6px 10px;">Reset</a>
       {% endif %}
+
+      <a href="{{ url_for('teacher.export_marks_excel', section=selected_section, exam_id=selected_exam, subject_id=selected_subject) }}" 
+         class="btn btn-outline btn-sm" style="font-size: 0.8rem; padding: 6px 10px; margin-left: auto; display: flex; align-items: center; gap: 4px;">
+        &#128196; Export to Excel
+      </a>
     </form>
 
     {% if marks %}

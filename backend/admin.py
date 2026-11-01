@@ -1,4 +1,4 @@
-﻿import re
+import re
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash
 from backend.auth import login_required, role_required
@@ -221,6 +221,11 @@ def teachers():
 
     teacher_list = execute_query(sql, tuple(params), fetch="all") or []
     all_subjects = execute_query("SELECT subject_id, subject_code, subject_name FROM subjects WHERE is_active = 1", fetch="all") or []
+    distinct_sections = execute_query("SELECT DISTINCT section FROM students WHERE section IS NOT NULL AND section != '' ORDER BY section ASC", fetch="all") or []
+    sections_list = [s["section"] for s in distinct_sections]
+    for default_sec in ["A", "B", "C", "D"]:
+        if default_sec not in sections_list:
+            sections_list.append(default_sec)
 
     # Fetch assignments for all teachers
     assignments_raw = execute_query(
@@ -241,6 +246,7 @@ def teachers():
         "admin/teachers.html",
         teachers=teacher_list,
         subjects=all_subjects,
+        sections=sections_list,
         assignments_map=assignments_map,
         search=search
     )
@@ -282,6 +288,22 @@ def add_teacher():
         (user_id, employee_id, full_name, email, phone or None, department, designation),
         commit=True
     )
+
+    teacher_id = execute_query("SELECT teacher_id FROM teachers WHERE user_id = %s", (user_id,), fetch="val")
+
+    # Optional initial subject & section assignment
+    subject_id = request.form.get("subject_id")
+    section = request.form.get("section", "").strip().upper()
+    if subject_id and teacher_id:
+        try:
+            execute_query(
+                "INSERT INTO teacher_assignments (teacher_id, subject_id, section) VALUES (%s, %s, %s)",
+                (teacher_id, subject_id, section or "All"),
+                commit=True
+            )
+            log_audit("TEACHER_ASSIGNED_SUBJECT", target_type="teacher", target_id=teacher_id, details=f"Initial assignment Sub {subject_id}, Sec {section or 'All'}")
+        except Exception as e:
+            pass
 
     log_audit("TEACHER_CREATED", target_type="teacher", target_id=employee_id, details=f"Created {full_name}")
     flash(f"Faculty member '{full_name}' ({employee_id}) registered successfully. Initial password: {raw_password}", "success")

@@ -145,6 +145,31 @@
         </div>
       </div>
 
+      <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 14px; margin-top: 4px; padding: 14px; background: rgba(255, 255, 255, 0.02); border: 1px dashed var(--border-color); border-radius: var(--radius-sm);">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label" style="display: flex; justify-content: space-between;">
+            <span>Assign Subject</span>
+            <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: normal;">Optional</span>
+          </label>
+          <select name="subject_id" class="form-select">
+            <option value="">-- No Subject Assigned Yet --</option>
+            {% for sub in subjects %}
+              <option value="{{ sub.subject_id }}">{{ sub.subject_code }} – {{ sub.subject_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label class="form-label">Section</label>
+          <input type="text" name="section" class="form-control" placeholder="All, A, B, C" list="sections-datalist" value="All">
+          <datalist id="sections-datalist">
+            <option value="All">
+            {% for sec in sections %}
+              <option value="{{ sec }}">
+            {% endfor %}
+          </datalist>
+        </div>
+      </div>
+
       <div class="form-group">
         <label class="form-label">Password <span class="required">*</span></label>
         <div style="position: relative;">

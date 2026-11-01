@@ -1,4 +1,6 @@
-﻿from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import Blueprint, render_template, request, redirect, url_for, flash, session, Response
+import csv
+import io
 from werkzeug.security import generate_password_hash
 from backend.auth import login_required, role_required
 from backend.database import execute_query
@@ -381,3 +383,103 @@ def results():
 def analytics():
     analytics_data = get_institutional_analytics()
     return render_template("teacher/analytics.html", analytics=analytics_data)
+
+@teacher_bp.route("/export-marks-excel")
+def export_marks_excel():
+    """
+    Exports section marks in Excel-compatible CSV format with UTF-8 BOM.
+    Filtered by section, exam, and/or subject.
+    """
+    section_filter = request.args.get("section", "All").strip()
+    exam_filter = request.args.get("exam_id", "All").strip()
+    subject_filter = request.args.get("subject_id", "All").strip()
+
+    sql = """
+        SELECT s.roll_no, s.full_name, s.section,
+               sub.subject_code, sub.subject_name,
+               e.exam_code, e.exam_name,
+               m.marks_obtained, m.max_marks, m.pass_marks,
+               ROUND((m.marks_obtained / m.max_marks) * 100, 1) AS percentage,
+               CASE WHEN m.marks_obtained >= m.pass_marks THEN 'Pass' ELSE 'Fail' END AS status,
+               m.remarks
+        FROM marks m
+        JOIN students s ON m.student_id = s.student_id
+        JOIN subjects sub ON m.subject_id = sub.subject_id
+        JOIN examinations e ON m.exam_id = e.exam_id
+        WHERE 1=1
+    """
+    params = []
+    if section_filter and section_filter != "All":
+        sql += " AND s.section = %s"
+        params.append(section_filter)
+    if exam_filter and exam_filter != "All":
+        sql += " AND e.exam_id = %s"
+        params.append(exam_filter)
+    if subject_filter and subject_filter != "All":
+        sql += " AND sub.subject_id = %s"
+        params.append(subject_filter)
+
+    sql += " ORDER BY s.section ASC, s.roll_no ASC, sub.subject_code ASC, e.exam_id ASC"
+
+    rows = execute_query(sql, tuple(params), fetch="all") or []
+
+    # Build CSV output in memory
+    output = io.StringIO()
+    # Write UTF-8 BOM so Excel opens with proper character rendering
+    output.write("\ufeff")
+    writer = csv.writer(output)
+
+    # Title & Metadata banner
+    writer.writerow(["Mohan Babu University - Academic Performance Record"])
+    writer.writerow([f"Section: {section_filter}", f"Exam Filter: {exam_filter}", f"Subject Filter: {subject_filter}"])
+    writer.writerow([])
+
+    # Header Row
+    writer.writerow([
+        "Roll Number",
+        "Student Name",
+        "Section",
+        "Course Code",
+        "Course Name",
+        "Examination",
+        "Marks Scored",
+        "Max Marks",
+        "Pass Marks",
+        "Percentage (%)",
+        "Grade",
+        "Status",
+        "Faculty Remarks"
+    ])
+
+    for r in rows:
+        pct = float(r["percentage"]) if r["percentage"] is not None else 0.0
+        grade = calculate_grade(pct)
+        writer.writerow([
+            r["roll_no"],
+            r["full_name"],
+            r["section"],
+            r["subject_code"],
+            r["subject_name"],
+            f"{r['exam_name']} ({r['exam_code']})",
+            r["marks_obtained"],
+            r["max_marks"],
+            r["pass_marks"],
+            pct,
+            grade,
+            r["status"],
+            r["remarks"] or ""
+        ])
+
+    csv_data = output.getvalue()
+    output.close()
+
+    filename = f"MBU_Section_{section_filter}_Marks.csv" if section_filter != "All" else "MBU_Marks_Export.csv"
+
+    return Response(
+        csv_data,
+        mimetype="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": f"attachment; filename=\"{filename}\"",
+            "Content-Type": "text/csv; charset=utf-8"
+        }
+    )

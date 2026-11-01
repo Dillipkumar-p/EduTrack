@@ -1,4 +1,4 @@
-﻿import os
+import os
 import logging
 from pathlib import Path
 from contextlib import contextmanager
@@ -60,6 +60,9 @@ def get_db_connection():
     global _pool
     conn = None
     try:
+        if _pool is None:
+            init_pool()
+
         if _pool is not None:
             try:
                 conn = _pool.get_connection()
