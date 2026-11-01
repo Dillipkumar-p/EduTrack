@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/portal.css') }}">
+{% block portal_css %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="portal-wrapper">
+  
+  <!-- Student Sidebar -->
+  <aside class="portal-sidebar">
+    <div class="sidebar-header">
+      <a href="{{ url_for('student.dashboard') }}" class="brand-wrapper">
+        {% if settings.logo_url and settings.logo_url != '' %}
+          <img src="{{ settings.logo_url }}" alt="{{ settings.site_title }}" style="height: 26px;">
+        {% else %}
+          <img src="{{ url_for('static', filename='images/default-logo.svg') }}" alt="EduTrack" style="height: 26px;">
+        {% endif %}
+      </a>
+      <span class="portal-role-tag role-tag-student">Student Portal</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">My Academic Workspace</div>
+      <a href="{{ url_for('student.dashboard') }}" class="sidebar-link {% if request.endpoint == 'student.dashboard' %}active{% endif %}">
+        <span>My Dashboard</span>
+      </a>
+      <a href="{{ url_for('student.profile') }}" class="sidebar-link {% if request.endpoint == 'student.profile' %}active{% endif %}">
+        <span>My Profile</span>
+      </a>
+      <a href="{{ url_for('student.results') }}" class="sidebar-link {% if request.endpoint == 'student.results' %}active{% endif %}">
+        <span>My Results</span>
+      </a>
+      <a href="{{ url_for('student.performance') }}" class="sidebar-link {% if request.endpoint == 'student.performance' %}active{% endif %}">
+        <span>Performance Analysis</span>
+      </a>
+      <a href="{{ url_for('student.report') }}" target="_blank" class="sidebar-link">
+        <span>Print Academic Transcript &rarr;</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-snippet">
+        <div class="user-meta">
+          <div class="user-name">{{ current_user.full_name }}</div>
+          <div class="user-subtext mono">{{ session.get('roll_no', 'Student') }} (Sec {{ session.get('section', 'A') }})</div>
+        </div>
+        <a href="{{ url_for('auth.logout') }}" class="btn-logout" title="Sign Out">Logout</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <main class="portal-main">
+    <header class="portal-topbar">
+      <div class="topbar-title-wrapper">
+        <button id="sidebar-toggle" class="btn btn-outline btn-sm mobile-menu-btn" style="display: none;" aria-label="Toggle navigation">&#9776;</button>
+        <div class="topbar-title">{% block page_title %}Academic Scorecard{% endblock %}</div>
+      </div>
+      <div class="topbar-tools">
+        <span class="mono" style="font-size: 0.85rem; color: var(--accent-primary); font-weight: 700;">
+          {{ session.get('roll_no', '') }}
+        </span>
+      </div>
+    </header>
+
+    <div class="portal-body">
+      {% block portal_content %}{% endblock %}
+    </div>
+  </main>
+
+</div>
+{% endblock %}

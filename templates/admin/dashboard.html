@@ -1,0 +1,215 @@
+{% extends "admin/layout.html" %}
+
+{% block page_title %}Institutional Overview{% endblock %}
+
+{% block portal_content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-headline">Campus Academic Overview</h1>
+    <p class="page-subheadline">Real-time indicators derived from active database records.</p>
+  </div>
+  <div style="display: flex; gap: 10px;">
+    <a href="{{ url_for('admin.students') }}" class="btn btn-secondary btn-sm">+ Add Student</a>
+    <a href="{{ url_for('admin.teachers') }}" class="btn btn-secondary btn-sm">+ Add Faculty</a>
+    <a href="{{ url_for('admin.appearance') }}" class="btn btn-primary btn-sm">Website Appearance</a>
+  </div>
+</div>
+
+<!-- Primary Real-Time Metric Scorecards -->
+<div class="metrics-row">
+  <div class="metric-card">
+    <span class="metric-label">Enrolled Students</span>
+    <div class="metric-value">{{ analytics.counts.students }}</div>
+    <span class="metric-trend">Active profiles</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Teaching Faculty</span>
+    <div class="metric-value">{{ analytics.counts.teachers }}</div>
+    <span class="metric-trend">Instructors assigned</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Subjects</span>
+    <div class="metric-value">{{ analytics.counts.subjects }}</div>
+    <span class="metric-trend">Curriculum courses</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Examinations</span>
+    <div class="metric-value">{{ analytics.counts.examinations }}</div>
+    <span class="metric-trend">Configured tiers</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Class Average</span>
+    <div class="metric-value metric-highlight">{{ analytics.overall_avg }}%</div>
+    <span class="metric-trend">Cumulative performance</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Passing Rate</span>
+    <div class="metric-value {% if analytics.overall_pass_pct < 60 %}metric-alert{% else %}metric-highlight{% endif %}">
+      {{ analytics.overall_pass_pct }}%
+    </div>
+    <span class="metric-trend">Verified assessments</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Assistance Needed</span>
+    <div class="metric-value {% if analytics.students_needing_assistance|length > 0 %}metric-alert{% endif %}">
+      {{ analytics.students_needing_assistance|length }}
+    </div>
+    <span class="metric-trend">Require faculty follow-up</span>
+  </div>
+</div>
+
+<!-- Two-Column Section: Assistance Alert List + Recent Enquiries -->
+<div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px; margin-bottom: 32px;">
+  
+  <!-- Teacher Assistance Alerts -->
+  <div class="card">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+      <div>
+        <h3 style="font-size: 1.1rem; font-weight: 700;">Students Requiring Teacher Assistance</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
+          Triggered when a student fails any assessment or aggregates below configured threshold.
+        </p>
+      </div>
+      <a href="{{ url_for('admin.analytics') }}" class="btn btn-outline btn-sm">Full Analytics &rarr;</a>
+    </div>
+
+    {% if analytics.students_needing_assistance %}
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Roll Number</th>
+              <th>Student Name</th>
+              <th>Section</th>
+              <th>Aggregate</th>
+              <th>Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in analytics.students_needing_assistance[:5] %}
+            <tr>
+              <td class="mono" style="font-weight: 600;">{{ s.roll_no }}</td>
+              <td>{{ s.full_name }}</td>
+              <td>{{ s.section }}</td>
+              <td><span class="badge badge-danger">{{ s.avg_pct }}%</span></td>
+              <td style="font-size: 0.8rem; color: var(--text-secondary);">{{ s.reason }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <div class="empty-state-title">No Students At-Risk</div>
+        <p class="empty-state-desc">
+          {% if analytics.has_data %}
+            All assessed students are currently performing above the required academic thresholds.
+          {% else %}
+            No marks have been recorded yet. Assistance flags will appear as soon as faculty enters marks.
+          {% endif %}
+        </p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Recent Institutional Enquiries -->
+  <div class="card">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+      <div>
+        <h3 style="font-size: 1.1rem; font-weight: 700;">Institutional Enquiries</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
+          Submissions received from the public website contact form.
+        </p>
+      </div>
+      <a href="{{ url_for('admin.enquiries') }}" class="btn btn-outline btn-sm">Manage &rarr;</a>
+    </div>
+
+    {% if recent_enquiries %}
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        {% for enq in recent_enquiries %}
+          <div style="padding: 12px 14px; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-primary);">{{ enq.college_name }}</div>
+              <div style="font-size: 0.775rem; color: var(--text-muted); margin-top: 2px;">
+                {{ enq.full_name }} &bull; {{ enq.phone_number }}
+              </div>
+            </div>
+            <div>
+              {% if enq.is_contacted %}
+                <span class="badge badge-lime">Contacted</span>
+              {% else %}
+                <span class="badge badge-warning">Pending</span>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state" style="padding: 24px;">
+        <div class="empty-state-title">No Enquiries Yet</div>
+        <p class="empty-state-desc">Public contact form submissions will appear here automatically.</p>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Recent Marks Activity Stream -->
+<div class="card">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+    <div>
+      <h3 style="font-size: 1.1rem; font-weight: 700;">Recent Assessment Activity</h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Latest marks entered into the database.</p>
+    </div>
+    <a href="{{ url_for('admin.marks') }}" class="btn btn-outline btn-sm">View All Marks &rarr;</a>
+  </div>
+
+  {% if recent_marks %}
+    <div class="table-wrapper">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Roll No</th>
+            <th>Student Name</th>
+            <th>Subject</th>
+            <th>Exam</th>
+            <th>Score</th>
+            <th>Percentage</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in recent_marks %}
+          {% set pct = ((m.marks_obtained / m.max_marks) * 100)|round(1) %}
+          <tr>
+            <td class="mono" style="font-weight: 600;">{{ m.roll_no }}</td>
+            <td>{{ m.full_name }}</td>
+            <td>{{ m.subject_name }}</td>
+            <td>{{ m.exam_name }}</td>
+            <td class="mono">{{ m.marks_obtained }} / {{ m.max_marks }}</td>
+            <td>
+              <span class="badge {% if pct >= 40 %}badge-lime{% else %}badge-danger{% endif %}">
+                {{ pct }}%
+              </span>
+            </td>
+            <td style="font-size: 0.8rem; color: var(--text-muted);">{{ m.created_at.strftime('%Y-%m-%d %H:%M') if m.created_at else 'Recent' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-title">No Assessment Activity Yet</div>
+      <p class="empty-state-desc">When teachers or administrators enter student assessment marks, they will stream here in real-time.</p>
+      <a href="{{ url_for('admin.subjects') }}" class="btn btn-secondary btn-sm">Configure Subjects &rarr;</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

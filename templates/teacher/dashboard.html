@@ -1,0 +1,178 @@
+{% extends "teacher/layout.html" %}
+
+{% block page_title %}Faculty Dashboard{% endblock %}
+
+{% block portal_content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-headline">Welcome, {{ current_user.full_name }}</h1>
+    <p class="page-subheadline">Access your assigned curriculum courses, manage student evaluations, and monitor academic progress.</p>
+  </div>
+  <a href="{{ url_for('teacher.marks') }}" class="btn btn-primary btn-sm">+ Enter Assessment Marks</a>
+</div>
+
+<!-- Faculty Key Indicators -->
+<div class="metrics-row">
+  <div class="metric-card">
+    <span class="metric-label">Assigned Courses</span>
+    <div class="metric-value">{{ assigned_subjects|length }}</div>
+    <span class="metric-trend">Curriculum subjects</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Cohort Enrollment</span>
+    <div class="metric-value">{{ total_students }}</div>
+    <span class="metric-trend">Total students</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Class Performance</span>
+    <div class="metric-value metric-highlight">{{ analytics.overall_avg }}%</div>
+    <span class="metric-trend">Cohort average</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Assistance Required</span>
+    <div class="metric-value {% if analytics.students_needing_assistance|length > 0 %}metric-alert{% endif %}">
+      {{ analytics.students_needing_assistance|length }}
+    </div>
+    <span class="metric-trend">Students flagged at-risk</span>
+  </div>
+</div>
+
+<!-- Two-Column Layout: Course Assignments + Students Needing Assistance -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
+  
+  <!-- Assigned Courses Card -->
+  <div class="card">
+    <div style="margin-bottom: 16px;">
+      <h3 style="font-size: 1.15rem; font-weight: 700;">My Assigned Courses</h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted);">Curriculum courses assigned by administration.</p>
+    </div>
+
+    {% if assigned_subjects %}
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        {% for sub in assigned_subjects %}
+          <div style="padding: 14px 16px; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <div style="font-weight: 700; color: var(--text-primary);">{{ sub.subject_name }}</div>
+              <div class="mono" style="font-size: 0.775rem; color: var(--accent-primary); margin-top: 2px;">{{ sub.subject_code }} &bull; Section {{ sub.section }}</div>
+            </div>
+            <a href="{{ url_for('teacher.marks', subject_id=sub.subject_id) }}" class="btn btn-outline btn-sm">Enter Marks &rarr;</a>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state" style="padding: 24px;">
+        <div class="empty-state-title">No Course Assignments</div>
+        <p class="empty-state-desc">You can evaluate all curriculum courses, or request formal section assignment from the administrator.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Students Requiring Teacher Assistance Alert -->
+  <div class="card">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+      <div>
+        <h3 style="font-size: 1.15rem; font-weight: 700; color: #FCA5A5;">Students Requiring Assistance</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">Failed subjects or below institutional benchmark.</p>
+      </div>
+      <a href="{{ url_for('teacher.results') }}" class="btn btn-outline btn-sm">View All &rarr;</a>
+    </div>
+
+    {% if analytics.students_needing_assistance %}
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Roll Number</th>
+              <th>Student Name</th>
+              <th>Sec</th>
+              <th>Score</th>
+              <th>Deficit Reason</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in analytics.students_needing_assistance[:5] %}
+            <tr>
+              <td class="mono" style="font-weight: 700; color: #F87171;">{{ s.roll_no }}</td>
+              <td style="font-weight: 600;">
+                <a href="{{ url_for('teacher.student_profile', student_id=s.student_id) }}" style="color: var(--text-primary); text-decoration: underline;">
+                  {{ s.full_name }}
+                </a>
+              </td>
+              <td>{{ s.section }}</td>
+              <td class="mono"><span class="badge badge-danger">{{ s.avg_pct }}%</span></td>
+              <td style="font-size: 0.75rem; color: var(--text-secondary);">{{ s.reason }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state" style="padding: 24px;">
+        <div class="empty-state-title" style="color: var(--accent-primary);">No Learning Deficits Detected</div>
+        <p class="empty-state-desc">All evaluated students are meeting current benchmark standards.</p>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Recent Marks Entered by Faculty -->
+<div class="card">
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+    <div>
+      <h3 style="font-size: 1.15rem; font-weight: 700;">My Recent Assessment Submissions</h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted);">Score entries logged under your faculty credentials.</p>
+    </div>
+    <a href="{{ url_for('teacher.marks') }}" class="btn btn-primary btn-sm">Enter More Marks &rarr;</a>
+  </div>
+
+  {% if recent_marks %}
+    <div class="table-wrapper">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Roll Number</th>
+            <th>Student Name</th>
+            <th>Section</th>
+            <th>Subject</th>
+            <th>Examination</th>
+            <th>Score</th>
+            <th>Percentage</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in recent_marks %}
+          {% set pct = ((m.marks_obtained / m.max_marks) * 100)|round(1) %}
+          <tr>
+            <td class="mono" style="font-weight: 700; color: var(--accent-primary);">{{ m.roll_no }}</td>
+            <td style="font-weight: 600;">{{ m.full_name }}</td>
+            <td>{{ m.section }}</td>
+            <td>{{ m.subject_name }}</td>
+            <td>{{ m.exam_name }}</td>
+            <td class="mono">{{ m.marks_obtained }} / {{ m.max_marks }}</td>
+            <td>
+              <span class="badge {% if pct >= 40 %}badge-lime{% else %}badge-danger{% endif %}">
+                {{ pct }}%
+              </span>
+            </td>
+            <td style="font-size: 0.8rem; color: var(--text-muted);">
+              {{ m.created_at.strftime('%Y-%m-%d %H:%M') if m.created_at else 'Recent' }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <div class="empty-state-title">No Marks Entered Yet</div>
+      <p class="empty-state-desc">Start entering assessment marks for your classes using the marks entry screen.</p>
+      <a href="{{ url_for('teacher.marks') }}" class="btn btn-primary btn-sm">Go to Marks Entry &rarr;</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

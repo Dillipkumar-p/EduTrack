@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{{ error_title|default('Notice') }} | {{ settings.site_title|default('EduTrack') }}{% endblock %}
+
+{% block content %}
+<div style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; background-color: var(--bg-main);">
+  <div class="card" style="max-width: 500px; width: 100%; text-align: center; padding: 48px 32px; border: 1px solid var(--border-color);">
+    <div style="font-family: var(--font-mono); font-size: 3.5rem; font-weight: 800; color: var(--accent-primary); line-height: 1; margin-bottom: 12px;">
+      {{ error_code|default(500) }}
+    </div>
+    <h2 style="font-size: 1.4rem; margin-bottom: 12px;">{{ error_title|default('System Notice') }}</h2>
+    <p style="color: var(--text-secondary); margin-bottom: 28px; font-size: 0.95rem;">
+      {{ error_message|default('An unexpected issue occurred while processing your request.') }}
+    </p>
+    <div style="display: flex; justify-content: center; gap: 14px;">
+      <a href="{{ url_for('public.index') }}" class="btn btn-secondary">Return to Homepage</a>
+      {% if current_user.is_authenticated %}
+        {% if current_user.role == 'admin' %}
+          <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary">Admin Dashboard</a>
+        {% elif current_user.role == 'teacher' %}
+          <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-primary">Teacher Portal</a>
+        {% elif current_user.role == 'student' %}
+          <a href="{{ url_for('student.dashboard') }}" class="btn btn-primary">Student Portal</a>
+        {% endif %}
+      {% else %}
+        <a href="{{ url_for('auth.login') }}" class="btn btn-primary">Sign In</a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

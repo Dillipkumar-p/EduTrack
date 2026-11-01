@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/portal.css') }}">
+{% block portal_css %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<div class="portal-wrapper">
+  
+  <!-- Admin Sidebar -->
+  <aside class="portal-sidebar">
+    <div class="sidebar-header">
+      <a href="{{ url_for('admin.dashboard') }}" class="brand-wrapper">
+        {% if settings.logo_url and settings.logo_url != '' %}
+          <img src="{{ settings.logo_url }}" alt="{{ settings.site_title }}" style="height: 26px;">
+        {% else %}
+          <img src="{{ url_for('static', filename='images/default-logo.svg') }}" alt="EduTrack" style="height: 26px;">
+        {% endif %}
+      </a>
+      <span class="portal-role-tag role-tag-admin">System Admin</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Core Operations</div>
+      <a href="{{ url_for('admin.dashboard') }}" class="sidebar-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}">
+        <span>Overview</span>
+      </a>
+      <a href="{{ url_for('admin.students') }}" class="sidebar-link {% if 'students' in request.endpoint %}active{% endif %}">
+        <span>Students</span>
+      </a>
+      <a href="{{ url_for('admin.teachers') }}" class="sidebar-link {% if 'teachers' in request.endpoint %}active{% endif %}">
+        <span>Teachers</span>
+      </a>
+      <a href="{{ url_for('admin.subjects') }}" class="sidebar-link {% if 'subjects' in request.endpoint %}active{% endif %}">
+        <span>Subjects</span>
+      </a>
+      <a href="{{ url_for('admin.examinations') }}" class="sidebar-link {% if 'examinations' in request.endpoint %}active{% endif %}">
+        <span>Examinations</span>
+      </a>
+      <a href="{{ url_for('admin.marks') }}" class="sidebar-link {% if 'marks' in request.endpoint %}active{% endif %}">
+        <span>Marks Overview</span>
+      </a>
+      <a href="{{ url_for('admin.analytics') }}" class="sidebar-link {% if 'analytics' in request.endpoint %}active{% endif %}">
+        <span>Institutional Analytics</span>
+      </a>
+
+      <div class="nav-section-title">Communications</div>
+      <a href="{{ url_for('admin.enquiries') }}" class="sidebar-link {% if 'enquiries' in request.endpoint %}active{% endif %}">
+        <span>Enquiries</span>
+      </a>
+      <a href="{{ url_for('admin.announcements') }}" class="sidebar-link {% if 'announcements' in request.endpoint %}active{% endif %}">
+        <span>Announcements</span>
+      </a>
+
+      <div class="nav-section-title">Configuration</div>
+      <a href="{{ url_for('admin.appearance') }}" class="sidebar-link {% if 'appearance' in request.endpoint %}active{% endif %}">
+        <span>Website Appearance</span>
+      </a>
+      <a href="{{ url_for('admin.settings') }}" class="sidebar-link {% if 'settings' in request.endpoint and 'appearance' not in request.endpoint %}active{% endif %}">
+        <span>Grading Settings</span>
+      </a>
+      <a href="{{ url_for('admin.audit_logs') }}" class="sidebar-link {% if 'audit_logs' in request.endpoint %}active{% endif %}">
+        <span>Audit Logs</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-snippet">
+        <div class="user-meta">
+          <div class="user-name">{{ current_user.full_name }}</div>
+          <div class="user-subtext">{{ current_user.username }}</div>
+        </div>
+        <a href="{{ url_for('auth.logout') }}" class="btn-logout" title="Sign Out">Logout</a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <main class="portal-main">
+    <header class="portal-topbar">
+      <div class="topbar-title-wrapper">
+        <button id="sidebar-toggle" class="btn btn-outline btn-sm mobile-menu-btn" style="display: none;" aria-label="Toggle navigation">&#9776;</button>
+        <div class="topbar-title">{% block page_title %}Administrative Control Portal{% endblock %}</div>
+      </div>
+      <div class="topbar-tools">
+        <a href="{{ url_for('public.index') }}" target="_blank" class="btn btn-outline btn-sm">View Live Site &rarr;</a>
+      </div>
+    </header>
+
+    <div class="portal-body">
+      {% block portal_content %}{% endblock %}
+    </div>
+  </main>
+
+</div>
+{% endblock %}

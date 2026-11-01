@@ -1,0 +1,247 @@
+{% extends "admin/layout.html" %}
+
+{% block page_title %}Institutional Analytics{% endblock %}
+
+{% block portal_content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-headline">Institutional Academic Analytics</h1>
+    <p class="page-subheadline">Cohort distributions, subject pass margins, and early learning deficit detection.</p>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="toolbar-card">
+  <form action="{{ url_for('admin.analytics') }}" method="GET" class="toolbar-filters" style="width: 100%;">
+    <div>
+      <select name="section" class="form-select" onchange="this.form.submit()">
+        <option value="All">All Sections</option>
+        {% for sec in sections %}
+          <option value="{{ sec }}" {% if selected_section == sec %}selected{% endif %}>Section {{ sec }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <select name="exam_id" class="form-select" onchange="this.form.submit()">
+        <option value="All">All Examinations</option>
+        {% for e in examinations %}
+          <option value="{{ e.exam_id }}" {% if selected_exam == (e.exam_id|string) %}selected{% endif %}>{{ e.exam_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    {% if selected_section != 'All' or selected_exam != 'All' %}
+      <a href="{{ url_for('admin.analytics') }}" class="btn btn-outline btn-sm">Reset Filters</a>
+    {% endif %}
+
+    <div style="margin-left: auto; font-size: 0.85rem; color: var(--text-muted);">
+      Cumulative Pass Rate: <strong style="color: var(--accent-primary);">{{ analytics.overall_pass_pct }}%</strong>
+    </div>
+  </form>
+</div>
+
+<!-- High Level Indicators -->
+<div class="metrics-row">
+  <div class="metric-card">
+    <span class="metric-label">Cohort Average</span>
+    <div class="metric-value metric-highlight">{{ analytics.overall_avg }}%</div>
+    <span class="metric-trend">Aggregate across entries</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Assessment Records</span>
+    <div class="metric-value">{{ analytics.counts.marks_records }}</div>
+    <span class="metric-trend">Verified MySQL entries</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Passing Rate</span>
+    <div class="metric-value {% if analytics.overall_pass_pct < 50 %}metric-alert{% else %}metric-highlight{% endif %}">
+      {{ analytics.overall_pass_pct }}%
+    </div>
+    <span class="metric-trend">Cohort benchmark</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">At-Risk Count</span>
+    <div class="metric-value {% if analytics.students_needing_assistance|length > 0 %}metric-alert{% endif %}">
+      {{ analytics.students_needing_assistance|length }}
+    </div>
+    <span class="metric-trend">Assistance triggered</span>
+  </div>
+</div>
+
+{% if analytics.has_data %}
+
+<!-- Two-Column Layout: Top Performers + Students Needing Assistance -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
+  
+  <!-- Top Performing Students -->
+  <div class="card">
+    <div style="margin-bottom: 16px;">
+      <h3 style="font-size: 1.15rem; font-weight: 700;">Top Performing Students</h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted);">Ranked by overall academic average percentage.</p>
+    </div>
+
+    {% if analytics.top_performers %}
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Roll Number</th>
+              <th>Student</th>
+              <th>Section</th>
+              <th>Aggregate</th>
+              <th>Grade</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in analytics.top_performers %}
+            <tr>
+              <td class="mono" style="font-weight: 700; color: var(--accent-primary);">{{ s.roll_no }}</td>
+              <td style="font-weight: 600;">{{ s.full_name }}</td>
+              <td>{{ s.section }}</td>
+              <td class="mono">{{ s.avg_pct }}%</td>
+              <td><span class="badge badge-lime">{{ s.grade }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state" style="padding: 24px;">No rankings available.</div>
+    {% endif %}
+  </div>
+
+  <!-- Students Needing Teacher Assistance -->
+  <div class="card">
+    <div style="margin-bottom: 16px;">
+      <h3 style="font-size: 1.15rem; font-weight: 700; color: #FCA5A5;">Students Requiring Teacher Assistance</h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted);">Failed one or more subjects, or overall aggregate below configured threshold.</p>
+    </div>
+
+    {% if analytics.students_needing_assistance %}
+      <div class="table-wrapper">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Roll Number</th>
+              <th>Student</th>
+              <th>Section</th>
+              <th>Average</th>
+              <th>Deficit Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in analytics.students_needing_assistance %}
+            <tr>
+              <td class="mono" style="font-weight: 700; color: #F87171;">{{ s.roll_no }}</td>
+              <td style="font-weight: 600;">{{ s.full_name }}</td>
+              <td>{{ s.section }}</td>
+              <td class="mono"><span class="badge badge-danger">{{ s.avg_pct }}%</span></td>
+              <td style="font-size: 0.775rem; color: var(--text-secondary);">{{ s.reason }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state" style="padding: 24px;">
+        <div class="empty-state-title" style="color: var(--accent-primary);">No At-Risk Students</div>
+        <p class="empty-state-desc">All evaluated students are meeting or exceeding passing standards.</p>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Subject-Wise Performance Breakdown -->
+<div class="card" style="margin-bottom: 32px;">
+  <div style="margin-bottom: 16px;">
+    <h3 style="font-size: 1.15rem; font-weight: 700;">Subject-Wise Performance Matrix</h3>
+    <p style="font-size: 0.8rem; color: var(--text-muted);">Curriculum course averages, pass percentages, and maximum scores attained.</p>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Course Code</th>
+          <th>Subject Name</th>
+          <th>Class Average</th>
+          <th>Pass Rate</th>
+          <th>Highest Score</th>
+          <th>Lowest Score</th>
+          <th>Total Evaluations</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sub in analytics.subject_analytics %}
+        <tr>
+          <td class="mono" style="font-weight: 700; color: var(--accent-primary);">{{ sub.subject_code }}</td>
+          <td style="font-weight: 600;">{{ sub.subject_name }}</td>
+          <td class="mono">{{ sub.avg_pct }}%</td>
+          <td>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span class="mono" style="font-size: 0.825rem;">{{ sub.pass_rate }}%</span>
+              <div style="flex: 1; min-width: 60px; max-width: 100px; height: 6px; background-color: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
+                <div style="height: 100%; width: {{ sub.pass_rate }}%; background-color: {% if sub.pass_rate >= 70 %}var(--accent-primary){% elif sub.pass_rate >= 50 %}var(--color-warning){% else %}var(--color-danger){% endif %};"></div>
+              </div>
+            </div>
+          </td>
+          <td class="mono">{{ sub.highest_mark }}</td>
+          <td class="mono">{{ sub.lowest_mark }}</td>
+          <td class="mono" style="color: var(--text-secondary);">{{ sub.total_entries }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Examination Tier Comparisons -->
+<div class="card">
+  <div style="margin-bottom: 16px;">
+    <h3 style="font-size: 1.15rem; font-weight: 700;">Examination Tier Comparisons</h3>
+    <p style="font-size: 0.8rem; color: var(--text-muted);">Evaluation metrics across continuous assessments (Internal 1, 2) and final semester.</p>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Examination Code</th>
+          <th>Examination Name</th>
+          <th>Tier Average %</th>
+          <th>Pass Rate</th>
+          <th>Total Submissions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ex in analytics.exam_analytics %}
+        <tr>
+          <td class="mono" style="font-weight: 700; color: var(--accent-primary);">{{ ex.exam_code }}</td>
+          <td style="font-weight: 600;">{{ ex.exam_name }}</td>
+          <td class="mono">{{ ex.avg_pct }}%</td>
+          <td>
+            <span class="badge {% if ex.pass_rate >= 60 %}badge-lime{% else %}badge-danger{% endif %}">
+              {{ ex.pass_rate }}%
+            </span>
+          </td>
+          <td class="mono" style="color: var(--text-secondary);">{{ ex.total_entries }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% else %}
+<div class="empty-state">
+  <div class="empty-state-title">No Marks Recorded for Analytics</div>
+  <p class="empty-state-desc">Once marks are submitted by teachers or administrators, cohort averages, pass rates, and teacher assistance alerts will calculate here automatically.</p>
+</div>
+{% endif %}
+
+{% endblock %}

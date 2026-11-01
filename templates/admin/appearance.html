@@ -1,0 +1,205 @@
+{% extends "admin/layout.html" %}
+
+{% block page_title %}Website Appearance &amp; Content{% endblock %}
+
+{% block portal_content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-headline">Website Appearance &amp; Content</h1>
+    <p class="page-subheadline">
+      Manage public website headlines, branding assets, color accents, and section visibility. All modifications are stored in MySQL and take effect immediately.
+    </p>
+  </div>
+  <a href="{{ url_for('public.index') }}" target="_blank" class="btn btn-primary btn-sm">
+    Preview Live Website &rarr;
+  </a>
+</div>
+
+<form action="{{ url_for('admin.appearance') }}" method="POST" enctype="multipart/form-data">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px;">
+    
+    <!-- Left Column: Branding, Accent Color, and Section Toggles -->
+    <div style="display: flex; flex-direction: column; gap: 28px;">
+      
+      <!-- Brand Assets Card -->
+      <div class="card">
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 6px;">Brand Assets &amp; Identity</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px;">Upload institutional logo and configure public tagline.</p>
+
+        <!-- Current Logo Display -->
+        <div style="margin-bottom: 18px; padding: 16px; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px;">Current Active Logo</div>
+            <div style="background-color: #090A0C; padding: 8px 14px; border-radius: 4px; display: inline-block; border: 1px solid var(--border-color);">
+              {% if settings.logo_url and settings.logo_url != '' %}
+                <img src="{{ settings.logo_url }}" alt="Logo" style="height: 28px; display: block;">
+              {% else %}
+                <img src="{{ url_for('static', filename='images/default-logo.svg') }}" alt="Logo" style="height: 28px; display: block;">
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="logo_file">Upload New Logo (SVG, PNG, JPG, WEBP)</label>
+          <input type="file" id="logo_file" name="logo_file" class="form-control" accept=".svg,.png,.jpg,.jpeg,.webp">
+          <div class="form-hint">Maximum file size: 2MB. Stored securely under static uploads.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="site_tagline">Platform Tagline</label>
+          <input type="text" id="site_tagline" name="site_tagline" class="form-control" value="{{ settings.site_tagline|default('Academic Performance, Made Visible.') }}">
+        </div>
+
+        <!-- Brand Color Selector -->
+        <div class="form-group">
+          <label class="form-label" for="primary_accent_color">Primary Brand Accent Color</label>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <input type="color" id="primary_accent_color" name="primary_accent_color" value="{{ settings.primary_accent_color|default('#C8F169') }}" style="width: 44px; height: 38px; border: 1px solid var(--border-color); border-radius: 4px; background: transparent; cursor: pointer;">
+            <input type="text" id="color-hex" class="form-control mono" style="max-width: 140px;" value="{{ settings.primary_accent_color|default('#C8F169') }}" readonly>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Default: #C8F169 (Lime Green)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section Visibility Toggles Card -->
+      <div class="card">
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 6px;">Public Homepage Section Toggles</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px;">Enable or disable entire sections on the public visitor landing page.</p>
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+            <input type="checkbox" name="features_visible" value="1" {% if settings.features_visible == 'true' %}checked{% endif %} style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+            <div>
+              <div style="font-size: 0.9rem; font-weight: 600;">Features Section</div>
+              <div style="font-size: 0.775rem; color: var(--text-muted);">Displays the 6 core architecture pillars.</div>
+            </div>
+          </label>
+
+          <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+            <input type="checkbox" name="how_it_works_visible" value="1" {% if settings.how_it_works_visible == 'true' %}checked{% endif %} style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+            <div>
+              <div style="font-size: 0.9rem; font-weight: 600;">How It Works / Roles Section</div>
+              <div style="font-size: 0.775rem; color: var(--text-muted);">Displays Administrator, Teacher, and Student capability cards.</div>
+            </div>
+          </label>
+
+          <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+            <input type="checkbox" name="benefits_visible" value="1" {% if settings.benefits_visible == 'true' %}checked{% endif %} style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+            <div>
+              <div style="font-size: 0.9rem; font-weight: 600;">Institutional Benefits Section</div>
+              <div style="font-size: 0.775rem; color: var(--text-muted);">Highlights centralized governance and early deficit discovery.</div>
+            </div>
+          </label>
+
+          <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+            <input type="checkbox" name="contact_visible" value="1" {% if settings.contact_visible == 'true' %}checked{% endif %} style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+            <div>
+              <div style="font-size: 0.9rem; font-weight: 600;">Institutional Contact Section</div>
+              <div style="font-size: 0.775rem; color: var(--text-muted);">Enables the partnership inquiry form on the public landing page.</div>
+            </div>
+          </label>
+
+          <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+            <input type="checkbox" name="announcements_visible" value="1" {% if settings.announcements_visible == 'true' %}checked{% endif %} style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+            <div>
+              <div style="font-size: 0.9rem; font-weight: 600;">Top Announcements Banner</div>
+              <div style="font-size: 0.775rem; color: var(--text-muted);">Streams system notices across the public navigation bar.</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right Column: Editorial Copy & Contact Information -->
+    <div style="display: flex; flex-direction: column; gap: 28px;">
+
+      <!-- Hero Section Copy -->
+      <div class="card">
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 6px;">Hero Section Content</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px;">Primary headline and explanatory paragraph visible above the fold.</p>
+
+        <div class="form-group">
+          <label class="form-label" for="hero_headline">Hero Headline</label>
+          <input type="text" id="hero_headline" name="hero_headline" class="form-control" value="{{ settings.hero_headline|default('Academic Performance, Made Visible.') }}" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="hero_subheadline">Hero Subtitle / Description</label>
+          <textarea id="hero_subheadline" name="hero_subheadline" rows="3" class="form-control" required>{{ settings.hero_subheadline|default('EduTrack brings students, teachers and academic performance together in one intelligent platform. Track progress, manage results and make better academic decisions.') }}</textarea>
+        </div>
+      </div>
+
+      <!-- About Section Copy -->
+      <div class="card">
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 6px;">About Section Content</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px;">Institutional rationale and pedagogical mission.</p>
+
+        <div class="form-group">
+          <label class="form-label" for="about_heading">About Section Heading</label>
+          <input type="text" id="about_heading" name="about_heading" class="form-control" value="{{ settings.about_heading|default('Engineered for Academic Precision') }}" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="about_body">About Section Body</label>
+          <textarea id="about_body" name="about_body" rows="4" class="form-control" required>{{ settings.about_body|default('EduTrack was designed from the ground up to solve the visibility gap in modern collegiate education. By replacing fragmented spreadsheets and delayed score entries with an intuitive, unified performance platform, institutions can identify learning deficits early and accelerate student success.') }}</textarea>
+        </div>
+      </div>
+
+      <!-- Contact Information Card -->
+      <div class="card">
+        <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 6px;">Campus Contact Details</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px;">Displayed on the public website footer and contact block.</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+          <div class="form-group">
+            <label class="form-label" for="contact_email">Admissions Email</label>
+            <input type="email" id="contact_email" name="contact_email" class="form-control" value="{{ settings.contact_email|default('contact@edutrack.edu') }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="contact_phone">Helpline Telephone</label>
+            <input type="text" id="contact_phone" name="contact_phone" class="form-control" value="{{ settings.contact_phone|default('+91 (800) 456-7890') }}">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="contact_college_placeholder">College Field Placeholder</label>
+          <input type="text" id="contact_college_placeholder" name="contact_college_placeholder" class="form-control" value="{{ settings.contact_college_placeholder|default('Malla Reddy University / JNTUH') }}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="contact_address">Institutional Address</label>
+          <input type="text" id="contact_address" name="contact_address" class="form-control" value="{{ settings.contact_address|default('EduTrack Academic Complex, HITEC City, Hyderabad') }}">
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div style="margin-top: 32px; padding: 20px 24px; background-color: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between;">
+    <div style="font-size: 0.85rem; color: var(--text-secondary);">
+      Changes are committed directly to MySQL and immediately update the live public website.
+    </div>
+    <button type="submit" class="btn btn-primary btn-lg">
+      Save All Appearance &amp; Content Changes
+    </button>
+  </div>
+</form>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const colorPicker = document.getElementById('primary_accent_color');
+const hexLabel = document.getElementById('color-hex');
+if (colorPicker && hexLabel) {
+  colorPicker.addEventListener('input', (e) => {
+    hexLabel.value = e.target.value.toUpperCase();
+  });
+}
+</script>
+{% endblock %}

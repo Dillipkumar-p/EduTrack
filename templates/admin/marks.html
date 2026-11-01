@@ -1,0 +1,125 @@
+{% extends "admin/layout.html" %}
+
+{% block page_title %}Academic Marks Master Registry{% endblock %}
+
+{% block portal_content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-headline">Master Academic Records</h1>
+    <p class="page-subheadline">Inspect verified assessment scores recorded across all enrolled students and courses.</p>
+  </div>
+</div>
+
+<!-- Filters Toolbar -->
+<div class="toolbar-card">
+  <form action="{{ url_for('admin.marks') }}" method="GET" class="toolbar-filters" style="width: 100%;">
+    <div style="flex: 1; max-width: 240px;">
+      <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Search student...">
+    </div>
+
+    <div>
+      <select name="exam_id" class="form-select" onchange="this.form.submit()">
+        <option value="">All Examinations</option>
+        {% for e in examinations %}
+          <option value="{{ e.exam_id }}" {% if selected_exam == (e.exam_id|string) %}selected{% endif %}>{{ e.exam_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <select name="subject_id" class="form-select" onchange="this.form.submit()">
+        <option value="">All Subjects</option>
+        {% for sub in subjects %}
+          <option value="{{ sub.subject_id }}" {% if selected_subject == (sub.subject_id|string) %}selected{% endif %}>{{ sub.subject_code }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <select name="section" class="form-select" onchange="this.form.submit()">
+        <option value="">All Sections</option>
+        {% for sec in sections %}
+          <option value="{{ sec }}" {% if selected_section == sec %}selected{% endif %}>Section {{ sec }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+    {% if search or selected_exam or selected_subject or selected_section %}
+      <a href="{{ url_for('admin.marks') }}" class="btn btn-outline btn-sm">Reset</a>
+    {% endif %}
+
+    <div style="margin-left: auto; font-size: 0.85rem; color: var(--text-muted);">
+      Found: <strong>{{ marks|length }}</strong> record(s)
+    </div>
+  </form>
+</div>
+
+<!-- Marks Table -->
+{% if marks %}
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Roll Number</th>
+        <th>Student Name</th>
+        <th>Section</th>
+        <th>Subject</th>
+        <th>Examination</th>
+        <th>Score</th>
+        <th>Percentage</th>
+        <th>Status</th>
+        <th>Recorded By</th>
+        <th style="text-align: right;">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in marks %}
+      {% set pct = ((m.marks_obtained / m.max_marks) * 100)|round(1) %}
+      {% set is_passed = (m.marks_obtained >= m.pass_marks) %}
+      <tr>
+        <td class="mono" style="font-weight: 700; color: var(--accent-primary);">{{ m.roll_no }}</td>
+        <td style="font-weight: 600;">{{ m.full_name }}</td>
+        <td>{{ m.section }}</td>
+        <td>
+          <div>{{ m.subject_name }}</div>
+          <div class="mono" style="font-size: 0.75rem; color: var(--text-muted);">{{ m.subject_code }}</div>
+        </td>
+        <td>{{ m.exam_name }}</td>
+        <td class="mono" style="font-weight: 600;">{{ m.marks_obtained }} / {{ m.max_marks }}</td>
+        <td class="mono">{{ pct }}%</td>
+        <td>
+          {% if is_passed %}
+            <span class="badge badge-lime">Passed</span>
+          {% else %}
+            <span class="badge badge-danger">Failed</span>
+          {% endif %}
+        </td>
+        <td style="font-size: 0.8rem; color: var(--text-secondary);">
+          {{ m.entered_by_user or 'System' }}
+        </td>
+        <td style="text-align: right;">
+          <form action="{{ url_for('admin.delete_mark', mark_id=m.mark_id) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Delete this mark entry for {{ m.roll_no }}?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-state-title">No Academic Records Matching Criteria</div>
+  <p class="empty-state-desc">
+    {% if search or selected_exam or selected_subject or selected_section %}
+      No marks match your active filters. Try clearing your search parameters.
+    {% else %}
+      No student assessment marks have been entered into the system yet.
+    {% endif %}
+  </p>
+</div>
+{% endif %}
+
+{% endblock %}

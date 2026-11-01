@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Official Academic Performance Report – {{ summary.student.roll_no }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}">
+  <style>
+    /* Screen display styles */
+    body {
+      background-color: #090A0C;
+      color: #F5F5F0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 32px 16px;
+    }
+    .screen-wrapper {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .print-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding: 14px 20px;
+      background: #141619;
+      border: 1px solid #292D30;
+      border-radius: 6px;
+    }
+    .print-page {
+      background: #FFFFFF;
+      color: #000000;
+      padding: 48px;
+      border-radius: 4px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+      font-family: 'Times New Roman', Times, serif;
+    }
+    .transcript-header {
+      text-align: center;
+      border-bottom: 2px solid #000000;
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+    }
+    .inst-name {
+      font-size: 20px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .transcript-title {
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 6px;
+      text-transform: uppercase;
+    }
+    .student-details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 24px;
+      border: 1px solid #333333;
+      padding: 12px 16px;
+      font-size: 14px;
+    }
+    .detail-row {
+      display: flex;
+      gap: 8px;
+    }
+    .detail-label {
+      font-weight: bold;
+      min-width: 110px;
+    }
+    table.transcript-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+    table.transcript-table th, table.transcript-table td {
+      border: 1px solid #000000;
+      padding: 8px 10px;
+      text-align: left;
+      font-size: 13px;
+    }
+    table.transcript-table th {
+      background-color: #F0F0F0;
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 12px;
+    }
+    .summary-box {
+      margin-top: 16px;
+      border-top: 2px solid #000000;
+      padding-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .signatures-row {
+      margin-top: 60px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .signature-box {
+      text-align: center;
+      width: 200px;
+      border-top: 1px solid #000000;
+      padding-top: 6px;
+      font-size: 12px;
+    }
+    .btn-print {
+      background-color: #C8F169;
+      color: #090A0C;
+      font-weight: 700;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-print:hover {
+      background-color: #B5DE58;
+    }
+    .btn-back {
+      color: #A1A1AA;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .btn-back:hover {
+      color: #F5F5F0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="screen-wrapper">
+  <!-- Controls bar hidden during print -->
+  <div class="print-bar no-print">
+    <div>
+      <a href="{{ url_for('student.dashboard') }}" class="btn-back">&larr; Return to Dashboard</a>
+    </div>
+    <div>
+      <button onclick="window.print()" class="btn-print">&#128438; Print / Save as PDF</button>
+    </div>
+  </div>
+
+  <!-- Official Transcript Page Sheet -->
+  <div class="print-page">
+    <div class="transcript-header">
+      <div class="inst-name">{{ settings.site_title|default('EduTrack') }} Academic Complex</div>
+      <div style="font-size: 12px; margin-top: 2px; color: #444;">Affiliated Collegiate Performance Registry</div>
+      <div class="transcript-title">Official Student Performance Transcript &amp; Grade Report</div>
+    </div>
+
+    <!-- Student Metadata -->
+    <div class="student-details-grid">
+      <div class="detail-row">
+        <span class="detail-label">Student Name:</span>
+        <span>{{ summary.student.full_name }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Roll Number:</span>
+        <span style="font-family: monospace; font-weight: bold;">{{ summary.student.roll_no }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Section:</span>
+        <span>Section {{ summary.student.section }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Academic Batch:</span>
+        <span>{{ summary.student.batch_year }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Email:</span>
+        <span>{{ summary.student.email }}</span>
+      </div>
+      <div class="detail-row">
+        <span class="detail-label">Issue Date:</span>
+        <span>{{ current_date if current_date else 'Current Semester' }}</span>
+      </div>
+    </div>
+
+    <!-- Results By Examination Tier -->
+    {% if summary.has_records %}
+      {% for exam_code, exam in summary.exams.items() %}
+        <div style="margin-top: 18px; margin-bottom: 6px; font-weight: bold; font-size: 13px; text-transform: uppercase;">
+          {{ exam.exam_name }} ({{ exam.exam_code }}) – Total Marks: {{ exam.total_max }}
+        </div>
+        <table class="transcript-table">
+          <thead>
+            <tr>
+              <th style="width: 15%;">Course Code</th>
+              <th style="width: 35%;">Subject Title</th>
+              <th style="width: 12%; text-align: center;">Max Marks</th>
+              <th style="width: 12%; text-align: center;">Pass Marks</th>
+              <th style="width: 14%; text-align: center;">Marks Scored</th>
+              <th style="width: 12%; text-align: center;">Grade</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for sub in exam.subjects %}
+            <tr>
+              <td style="font-family: monospace;">{{ sub.subject_code }}</td>
+              <td>{{ sub.subject_name }}</td>
+              <td style="text-align: center;">{{ sub.max_marks }}</td>
+              <td style="text-align: center;">{{ sub.pass_marks }}</td>
+              <td style="text-align: center; font-weight: bold;">{{ sub.marks_obtained }}</td>
+              <td style="text-align: center; font-weight: bold;">{{ sub.grade }}</td>
+            </tr>
+            {% endfor %}
+            <tr style="background-color: #FAFAFA; font-weight: bold;">
+              <td colspan="2" style="text-align: right;">Tier Total:</td>
+              <td style="text-align: center;">{{ exam.total_max }}</td>
+              <td style="text-align: center;">—</td>
+              <td style="text-align: center;">{{ exam.total_obtained }}</td>
+              <td style="text-align: center;">{{ exam.percentage }}%</td>
+            </tr>
+          </tbody>
+        </table>
+      {% endfor %}
+
+      <!-- Cumulative Institutional Summary -->
+      <div class="summary-box">
+        <div>
+          Cumulative Aggregate: {{ summary.overall.total_obtained }} / {{ summary.overall.total_max }}
+        </div>
+        <div>
+          Overall Percentage: {{ summary.overall.percentage }}%
+        </div>
+        <div>
+          Assigned Grade: {{ summary.overall.grade }}
+        </div>
+        <div>
+          Result: {{ summary.overall.status }}
+        </div>
+      </div>
+
+    {% else %}
+      <div style="text-align: center; padding: 40px; border: 1px dashed #666; margin: 20px 0;">
+        No official marks have been registered for this student account.
+      </div>
+    {% endif %}
+
+    <!-- Formal Verification Signatures -->
+    <div class="signatures-row">
+      <div class="signature-box">
+        Faculty Counselor
+      </div>
+      <div class="signature-box">
+        Head of Department
+      </div>
+      <div class="signature-box">
+        Controller of Examinations
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

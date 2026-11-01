@@ -1,0 +1,114 @@
+/* ==============================================================================
+   EDUTRACK OFFICIAL ACADEMIC TRANSCRIPT PRINT STYLESHEET
+   Clean high-contrast layout optimized for print & PDF generation
+   ============================================================================== */
+
+@media print {
+  body {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 11pt;
+    margin: 0;
+    padding: 0;
+  }
+
+  .portal-sidebar, .portal-topbar, .no-print, .btn, .flash-container {
+    display: none !important;
+  }
+
+  .print-page {
+    width: 100%;
+    margin: 0 auto;
+    padding: 20mm;
+    box-sizing: border-box;
+    background: #FFF !important;
+  }
+
+  .transcript-header {
+    text-align: center;
+    border-bottom: 2pt solid #000;
+    padding-bottom: 12pt;
+    margin-bottom: 16pt;
+  }
+
+  .inst-name {
+    font-size: 18pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1pt;
+  }
+
+  .transcript-title {
+    font-size: 13pt;
+    font-weight: bold;
+    margin-top: 4pt;
+    text-transform: uppercase;
+  }
+
+  .student-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8pt;
+    margin-bottom: 16pt;
+    font-size: 10pt;
+    border: 1pt solid #333;
+    padding: 8pt 12pt;
+  }
+
+  .detail-row {
+    display: flex;
+    gap: 6pt;
+  }
+
+  .detail-label {
+    font-weight: bold;
+  }
+
+  table.transcript-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16pt;
+    page-break-inside: avoid;
+  }
+
+  table.transcript-table th, table.transcript-table td {
+    border: 1pt solid #000 !important;
+    padding: 5pt 8pt;
+    text-align: left;
+    font-size: 10pt;
+    color: #000 !important;
+    background: transparent !important;
+  }
+
+  table.transcript-table th {
+    background-color: #F0F0F0 !important;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .summary-box {
+    margin-top: 14pt;
+    border-top: 1.5pt solid #000;
+    padding-top: 8pt;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11pt;
+    font-weight: bold;
+  }
+
+  .signatures-row {
+    margin-top: 45pt;
+    display: flex;
+    justify-content: space-between;
+    page-break-inside: avoid;
+  }
+
+  .signature-box {
+    text-align: center;
+    width: 180pt;
+    border-top: 1pt solid #000;
+    padding-top: 4pt;
+    font-size: 9.5pt;
+  }
+}

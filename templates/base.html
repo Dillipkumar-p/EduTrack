@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}{{ settings.site_title|default('EduTrack') }}{% endblock %} – Academic Performance Management</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="{{ settings.logo_url|default('/static/images/default-logo.svg') }}">
+
+  <!-- Core Design System -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
+  {% block extra_css %}{% endblock %}
+
+  <!-- Custom Brand Accent Override if configured by Admin -->
+  {% if settings.primary_accent_color and settings.primary_accent_color != '#C8F169' %}
+  <style>
+    :root {
+      --accent-primary: {{ settings.primary_accent_color }};
+      --accent-glow: {{ settings.primary_accent_color }}26;
+      --color-success: {{ settings.primary_accent_color }};
+    }
+  </style>
+  {% endif %}
+</head>
+<body>
+
+  <!-- Flash Messages Toast Notification System -->
+  <div class="flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category if category != 'error' else 'error' }}">
+            <span>{{ message }}</span>
+            <button type="button" class="alert-close" aria-label="Close alert">&times;</button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  {% block content %}{% endblock %}
+
+  <!-- Core Scripts -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

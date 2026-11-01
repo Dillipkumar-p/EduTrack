@@ -1,0 +1,150 @@
+{% extends "student/layout.html" %}
+
+{% block page_title %}Academic Performance Analytics{% endblock %}
+
+{% block portal_content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-headline">Performance Analysis</h1>
+    <p class="page-subheadline">Longitudinal trajectory across evaluation tiers, subject proficiencies, and targeted focus areas.</p>
+  </div>
+  <a href="{{ url_for('student.report') }}" target="_blank" class="btn btn-primary btn-sm">
+    Print Full Academic Report
+  </a>
+</div>
+
+<!-- Key Performance Indicators -->
+<div class="metrics-row">
+  <div class="metric-card">
+    <span class="metric-label">Cumulative Average</span>
+    <div class="metric-value metric-highlight">{{ summary.overall.percentage }}%</div>
+    <span class="metric-trend">Aggregate percentage</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Institutional Grade</span>
+    <div class="metric-value" style="color: var(--accent-primary);">{{ summary.overall.grade }}</div>
+    <span class="metric-trend">Overall grading bracket</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Academic Status</span>
+    <div class="metric-value" style="{% if summary.overall.status == 'PASSED' %}color: var(--accent-primary);{% else %}color: var(--color-danger);{% endif %}">
+      {{ summary.overall.status }}
+    </div>
+    <span class="metric-trend">
+      {% if summary.overall.failed_subjects_count > 0 %}
+        {{ summary.overall.failed_subjects_count }} subjects below benchmark
+      {% else %}
+        All subjects cleared
+      {% endif %}
+    </span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Faculty Assistance</span>
+    <div class="metric-value {% if summary.overall.assistance_needed %}metric-alert{% else %}metric-highlight{% endif %}">
+      {{ 'Required' if summary.overall.assistance_needed else 'On Track' }}
+    </div>
+    <span class="metric-trend">Deficit intervention alert</span>
+  </div>
+</div>
+
+{% if summary.has_records %}
+
+<!-- Examination Comparison Breakdown -->
+<div class="card" style="margin-bottom: 32px;">
+  <div style="margin-bottom: 20px;">
+    <h3 style="font-size: 1.15rem; font-weight: 700;">Examination Progress Trajectory</h3>
+    <p style="font-size: 0.8rem; color: var(--text-muted);">Comparing your aggregate percentages across continuous and terminal assessments.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 18px;">
+    {% for exam_code, exam in summary.exams.items() %}
+    <div>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+        <div>
+          <span style="font-weight: 700; color: var(--text-primary);">{{ exam.exam_name }}</span>
+          <span class="mono" style="font-size: 0.8rem; color: var(--text-muted); margin-left: 8px;">({{ exam.total_obtained }}/{{ exam.total_max }})</span>
+        </div>
+        <div class="mono" style="font-weight: 700; font-size: 1.05rem; color: {% if exam.percentage >= 40 %}var(--accent-primary){% else %}var(--color-danger){% endif %};">
+          {{ exam.percentage }}%
+        </div>
+      </div>
+      <div class="bar-track" style="height: 10px;">
+        <div class="{% if exam.percentage >= 40 %}bar-fill-lime{% else %}bar-fill-coral{% endif %}" style="width: {{ [exam.percentage, 100]|min }}%;"></div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<!-- Strengths and Areas for Improvement -->
+<div class="insights-grid">
+  
+  <!-- Strengths -->
+  <div class="insight-card">
+    <div class="insight-card-title">
+      <span style="color: var(--accent-primary); font-size: 1.3rem;">&#9733;</span>
+      <span>Course Strengths &amp; Proficiencies</span>
+    </div>
+    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px;">
+      Subjects in which your aggregate performance consistently exceeds 65%.
+    </p>
+
+    {% if summary.strengths %}
+      {% for st in summary.strengths %}
+        <div class="insight-item">
+          <div>
+            <div style="font-weight: 700; color: var(--text-primary);">{{ st.subject_name }}</div>
+          </div>
+          <div class="mono" style="font-size: 1.05rem; font-weight: 700; color: var(--accent-primary);">
+            {{ st.avg_pct }}%
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p style="color: var(--text-muted); font-size: 0.85rem; padding: 12px 0;">
+        No subjects currently exceed the 65% strength benchmark.
+      </p>
+    {% endif %}
+  </div>
+
+  <!-- Improvement Areas -->
+  <div class="insight-card">
+    <div class="insight-card-title">
+      <span style="color: var(--color-danger); font-size: 1.3rem;">&#9888;</span>
+      <span style="color: #FCA5A5;">Targeted Focus &amp; Improvement Areas</span>
+    </div>
+    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px;">
+      Subjects where performance falls below 60%, warranting dedicated revision and instructor guidance.
+    </p>
+
+    {% if summary.improvements %}
+      {% for imp in summary.improvements %}
+        <div class="insight-item">
+          <div>
+            <div style="font-weight: 700; color: var(--text-primary);">{{ imp.subject_name }}</div>
+          </div>
+          <div class="mono" style="font-size: 1.05rem; font-weight: 700; color: var(--color-danger);">
+            {{ imp.avg_pct }}%
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p style="color: var(--text-muted); font-size: 0.85rem; padding: 12px 0;">
+        You are meeting or exceeding benchmarks across all enrolled courses. Excellent work!
+      </p>
+    {% endif %}
+  </div>
+
+</div>
+
+{% else %}
+  <div class="empty-state">
+    <div class="empty-state-title">No Performance Metrics Yet</div>
+    <p class="empty-state-desc">Performance charts and trajectory analysis will render as marks are recorded.</p>
+  </div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "admin/layout.html" %}
+
+{% block page_title %}Security Audit Logs{% endblock %}
+
+{% block portal_content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-headline">Security Audit Trail</h1>
+    <p class="page-subheadline">Immutable chronological record of administrative interventions, score modifications, and user sign-ins.</p>
+  </div>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar-card">
+  <form action="{{ url_for('admin.audit_logs') }}" method="GET" class="toolbar-filters" style="width: 100%;">
+    <div style="flex: 1; max-width: 320px;">
+      <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Search user, action, details...">
+    </div>
+
+    <div>
+      <select name="role" class="form-select" onchange="this.form.submit()">
+        <option value="">All Roles</option>
+        <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admin</option>
+        <option value="teacher" {% if role_filter == 'teacher' %}selected{% endif %}>Teacher</option>
+        <option value="student" {% if role_filter == 'student' %}selected{% endif %}>Student</option>
+        <option value="public" {% if role_filter == 'public' %}selected{% endif %}>Public / Guest</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+    {% if search or role_filter %}
+      <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline btn-sm">Reset</a>
+    {% endif %}
+
+    <div style="margin-left: auto; font-size: 0.85rem; color: var(--text-muted);">
+      Displaying latest <strong>{{ logs|length }}</strong> events
+    </div>
+  </form>
+</div>
+
+<!-- Logs Table -->
+{% if logs %}
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Timestamp</th>
+        <th>User Identity</th>
+        <th>Role</th>
+        <th>Action Event</th>
+        <th>Target</th>
+        <th>Details</th>
+        <th>Client IP</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for l in logs %}
+      <tr>
+        <td class="mono" style="font-size: 0.775rem; color: var(--text-muted);">
+          {{ l.created_at.strftime('%Y-%m-%d %H:%M:%S') if l.created_at else 'Recent' }}
+        </td>
+        <td style="font-weight: 600;">{{ l.username }}</td>
+        <td>
+          {% if l.role == 'admin' %}
+            <span class="badge badge-lime">Admin</span>
+          {% elif l.role == 'teacher' %}
+            <span class="badge badge-warning">Teacher</span>
+          {% elif l.role == 'student' %}
+            <span class="badge badge-muted">Student</span>
+          {% else %}
+            <span class="badge badge-muted">{{ l.role }}</span>
+          {% endif %}
+        </td>
+        <td class="mono" style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary);">
+          {{ l.action }}
+        </td>
+        <td style="font-size: 0.8rem; color: var(--text-secondary);">
+          {{ l.target_type or '—' }}{% if l.target_id %} ({{ l.target_id }}){% endif %}
+        </td>
+        <td style="font-size: 0.8rem; color: var(--text-secondary); max-width: 280px;">
+          {{ l.details or '—' }}
+        </td>
+        <td class="mono" style="font-size: 0.775rem; color: var(--text-muted);">
+          {{ l.ip_address or '—' }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-state-title">No Audit Logs Found</div>
+  <p class="empty-state-desc">Actions will record automatically into this tamper-evident trail.</p>
+</div>
+{% endif %}
+
+{% endblock %}

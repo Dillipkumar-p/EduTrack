@@ -1,0 +1,219 @@
+{% extends "teacher/layout.html" %}
+
+{% block page_title %}Marks Entry &amp; Evaluation{% endblock %}
+
+{% block portal_content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-headline">Assessment Marks Entry</h1>
+    <p class="page-subheadline">Record, validate, and update student performance scores across examination tiers.</p>
+  </div>
+</div>
+
+<!-- Two-Column Layout: Marks Entry Form + Previously Entered Marks -->
+<div style="display: grid; grid-template-columns: 0.9fr 1.1fr; gap: 28px; margin-bottom: 36px;">
+
+  <!-- Marks Entry Card -->
+  <div class="card">
+    <div style="margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color);">
+      <h3 style="font-size: 1.15rem; font-weight: 700;">Enter Assessment Score</h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">
+        Automatic validation enforces configured exam maximums and passing baselines.
+      </p>
+    </div>
+
+    <form action="{{ url_for('teacher.marks') }}" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-group">
+        <label class="form-label" for="student_id">Student <span class="required">*</span></label>
+        <select id="student_id" name="student_id" class="form-select" required>
+          <option value="">-- Choose Student --</option>
+          {% for s in students %}
+            <option value="{{ s.student_id }}">
+              {{ s.roll_no }} – {{ s.full_name }} (Sec {{ s.section }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="subject_id">Subject Course <span class="required">*</span></label>
+        <select id="subject_id" name="subject_id" class="form-select" required>
+          <option value="">-- Choose Subject --</option>
+          {% for sub in subjects %}
+            <option value="{{ sub.subject_id }}" data-max="{{ sub.max_marks }}">
+              {{ sub.subject_code }} – {{ sub.subject_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="exam_id">Examination Assessment <span class="required">*</span></label>
+        <select id="exam_id" name="exam_id" class="form-select" required>
+          <option value="">-- Choose Examination Tier --</option>
+          {% for ex in examinations %}
+            <option value="{{ ex.exam_id }}" data-max="{{ ex.default_max_marks }}" data-pass="{{ ex.default_pass_marks }}">
+              {{ ex.exam_name }} ({{ ex.exam_code }}) – Max {{ ex.default_max_marks }} (Pass: {{ ex.default_pass_marks }})
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="marks_obtained">Marks Obtained <span class="required">*</span></label>
+        <input type="number" id="marks_obtained" name="marks_obtained" class="form-control mono" 
+               step="0.5" min="0" placeholder="e.g. 42.5" required>
+        <div id="marks-preview" style="margin-top: 8px; min-height: 24px;"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="remarks">Faculty Remarks <span style="font-weight: normal; color: var(--text-muted);">(Optional)</span></label>
+        <input type="text" id="remarks" name="remarks" class="form-control" placeholder="e.g. Excellent algorithmic logic, needs review on trees...">
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 8px;">
+        Save Assessment Mark
+      </button>
+    </form>
+  </div>
+
+  <!-- Previously Entered Marks in Section / Subject -->
+  <div class="card">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+      <div>
+        <h3 style="font-size: 1.15rem; font-weight: 700;">Recorded Evaluations</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Recent evaluations entered across the department.</p>
+      </div>
+      <span class="mono" style="font-size: 0.8rem; color: var(--text-secondary);">{{ marks|length }} entries</span>
+    </div>
+
+    <!-- Quick filter bar -->
+    <form action="{{ url_for('teacher.marks') }}" method="GET" style="display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;">
+      <select name="exam_id" class="form-select" style="max-width: 150px; font-size: 0.8rem; padding: 6px 10px;" onchange="this.form.submit()">
+        <option value="">All Exams</option>
+        {% for e in examinations %}
+          <option value="{{ e.exam_id }}" {% if selected_exam == (e.exam_id|string) %}selected{% endif %}>{{ e.exam_code }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="subject_id" class="form-select" style="max-width: 160px; font-size: 0.8rem; padding: 6px 10px;" onchange="this.form.submit()">
+        <option value="">All Subjects</option>
+        {% for sub in subjects %}
+          <option value="{{ sub.subject_id }}" {% if selected_subject == (sub.subject_id|string) %}selected{% endif %}>{{ sub.subject_code }}</option>
+        {% endfor %}
+      </select>
+
+      <select name="section" class="form-select" style="max-width: 120px; font-size: 0.8rem; padding: 6px 10px;" onchange="this.form.submit()">
+        <option value="">All Sec</option>
+        {% for sec in sections %}
+          <option value="{{ sec }}" {% if selected_section == sec %}selected{% endif %}>Sec {{ sec }}</option>
+        {% endfor %}
+      </select>
+
+      {% if selected_exam or selected_subject or selected_section %}
+        <a href="{{ url_for('teacher.marks') }}" class="btn btn-outline btn-sm" style="font-size: 0.8rem; padding: 6px 10px;">Reset</a>
+      {% endif %}
+    </form>
+
+    {% if marks %}
+      <div class="table-wrapper" style="max-height: 480px; overflow-y: auto;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Roll Number</th>
+              <th>Student Name</th>
+              <th>Course</th>
+              <th>Exam</th>
+              <th>Score</th>
+              <th>Status</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in marks %}
+            {% set is_passed = (m.marks_obtained >= m.pass_marks) %}
+            <tr>
+              <td class="mono" style="font-weight: 700; color: var(--accent-primary);">{{ m.roll_no }}</td>
+              <td style="font-weight: 600;">{{ m.full_name }}</td>
+              <td>{{ m.subject_code }}</td>
+              <td>{{ m.exam_code }}</td>
+              <td class="mono" style="font-weight: 700;">{{ m.marks_obtained }} / {{ m.max_marks }}</td>
+              <td>
+                {% if is_passed %}
+                  <span class="badge badge-lime">Pass</span>
+                {% else %}
+                  <span class="badge badge-danger">Fail</span>
+                {% endif %}
+              </td>
+              <td style="text-align: right;">
+                <button type="button" class="btn btn-outline btn-sm" style="padding: 3px 8px; font-size: 0.75rem;"
+                        onclick="openEditMarkModal({{ m.mark_id }}, '{{ m.roll_no }}', '{{ m.subject_code }}', '{{ m.exam_code }}', {{ m.marks_obtained }}, {{ m.max_marks }}, '{{ m.remarks|replace("'", "\\'") if m.remarks else '' }}')">
+                  Edit
+                </button>
+                <form action="{{ url_for('teacher.delete_mark', mark_id=m.mark_id) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Remove mark entry?');">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-danger btn-sm" style="padding: 3px 8px; font-size: 0.75rem;">Del</button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty-state" style="padding: 24px;">
+        <div class="empty-state-title">No Marks Found</div>
+        <p class="empty-state-desc">Use the form on the left to enter student assessment marks.</p>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- Modal: Edit Mark -->
+<div id="edit-mark-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="font-size: 1.2rem;">Edit Score: <span id="edit-mark-info" class="mono" style="color: var(--accent-primary);"></span></h3>
+      <button type="button" class="modal-close" onclick="closeModal('edit-mark-modal')">&times;</button>
+    </div>
+
+    <form id="edit-mark-form" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-group">
+        <label class="form-label">Marks Obtained (<span id="edit-mark-max-label"></span> max) <span class="required">*</span></label>
+        <input type="number" id="edit-mark-obtained" name="marks_obtained" class="form-control mono" step="0.5" min="0" required>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Remarks</label>
+        <input type="text" id="edit-mark-remarks" name="remarks" class="form-control">
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('edit-mark-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Update Score</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/portal.js') }}"></script>
+<script>
+function openEditMarkModal(markId, rollNo, subCode, examCode, obtained, maxMarks, remarks) {
+  document.getElementById('edit-mark-form').action = '/teacher/marks/edit/' + markId;
+  document.getElementById('edit-mark-info').textContent = rollNo + ' (' + subCode + ' - ' + examCode + ')';
+  document.getElementById('edit-mark-max-label').textContent = maxMarks;
+  document.getElementById('edit-mark-obtained').value = obtained;
+  document.getElementById('edit-mark-obtained').max = maxMarks;
+  document.getElementById('edit-mark-remarks').value = remarks;
+  openModal('edit-mark-modal');
+}
+</script>
+{% endblock %}

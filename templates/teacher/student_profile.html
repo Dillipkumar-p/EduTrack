@@ -1,0 +1,158 @@
+{% extends "teacher/layout.html" %}
+
+{% block page_title %}Student Academic Profile{% endblock %}
+
+{% block portal_content %}
+<div class="page-header-row">
+  <div>
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+      <a href="{{ url_for('teacher.students') }}" style="color: var(--text-muted); font-size: 0.85rem;">&larr; Back to Roster</a>
+      <span style="color: var(--border-color);">/</span>
+      <span class="mono" style="font-size: 0.85rem; color: var(--accent-primary);">{{ summary.student.roll_no }}</span>
+    </div>
+    <h1 class="page-headline">{{ summary.student.full_name }}</h1>
+    <p class="page-subheadline">Comprehensive performance breakdown and assessment history.</p>
+  </div>
+  <div>
+    {% if summary.overall.assistance_needed %}
+      <span class="badge badge-danger" style="font-size: 0.85rem; padding: 6px 12px;">Teacher Assistance Required</span>
+    {% else %}
+      <span class="badge badge-lime" style="font-size: 0.85rem; padding: 6px 12px;">Good Academic Standing</span>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Student Identity & Summary Scorecards -->
+<div class="metrics-row">
+  <div class="metric-card">
+    <span class="metric-label">Section &amp; Batch</span>
+    <div class="metric-value" style="font-size: 1.5rem;">Sec {{ summary.student.section }}</div>
+    <span class="metric-trend">{{ summary.student.batch_year }}</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Overall Percentage</span>
+    <div class="metric-value metric-highlight">{{ summary.overall.percentage }}%</div>
+    <span class="metric-trend">{{ summary.overall.total_obtained }} / {{ summary.overall.total_max }} total marks</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Academic Grade</span>
+    <div class="metric-value" style="color: var(--accent-primary);">{{ summary.overall.grade }}</div>
+    <span class="metric-trend">Status: {{ summary.overall.status }}</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Evaluations Recorded</span>
+    <div class="metric-value">{{ summary.overall.total_entries }}</div>
+    <span class="metric-trend">{{ summary.overall.failed_subjects_count }} assessment(s) failed</span>
+  </div>
+</div>
+
+<!-- Examination History Breakdown -->
+{% if summary.has_records %}
+  {% for exam_code, exam in summary.exams.items() %}
+  <div class="results-exam-block">
+    <div class="results-exam-header">
+      <div>
+        <div class="exam-header-title">{{ exam.exam_name }}</div>
+        <div class="mono" style="font-size: 0.775rem; color: var(--accent-primary); margin-top: 2px;">
+          {{ exam.exam_code }} &bull; Max Marks: {{ exam.total_max }}
+        </div>
+      </div>
+      <div class="exam-header-stats">
+        <span class="stat-pill mono">Scored: {{ exam.total_obtained }} / {{ exam.total_max }}</span>
+        <span class="stat-pill mono" style="color: var(--accent-primary);">{{ exam.percentage }}%</span>
+        <span class="badge {% if exam.failed_count == 0 %}badge-lime{% else %}badge-danger{% endif %}">
+          {{ exam.status }}
+        </span>
+      </div>
+    </div>
+
+    <div class="table-wrapper" style="border: none; border-radius: 0;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Course Code</th>
+            <th>Subject Name</th>
+            <th>Obtained</th>
+            <th>Max Marks</th>
+            <th>Pass Mark</th>
+            <th>Percentage</th>
+            <th>Grade</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sub in exam.subjects %}
+          <tr>
+            <td class="mono" style="font-weight: 700;">{{ sub.subject_code }}</td>
+            <td style="font-weight: 600;">{{ sub.subject_name }}</td>
+            <td class="mono" style="font-weight: 700; color: {% if sub.is_passed %}var(--text-primary){% else %}var(--color-danger){% endif %};">
+              {{ sub.marks_obtained }}
+            </td>
+            <td class="mono">{{ sub.max_marks }}</td>
+            <td class="mono">{{ sub.pass_marks }}</td>
+            <td class="mono">{{ sub.percentage }}%</td>
+            <td><span class="badge {% if sub.grade == 'F' %}badge-danger{% else %}badge-lime{% endif %}">{{ sub.grade }}</span></td>
+            <td>
+              {% if sub.is_passed %}
+                <span class="badge badge-lime">Passed</span>
+              {% else %}
+                <span class="badge badge-danger">Failed</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endfor %}
+
+  <!-- Strengths & Improvement Areas -->
+  <div class="insights-grid">
+    <div class="insight-card">
+      <div class="insight-card-title">
+        <span style="color: var(--accent-primary); font-size: 1.2rem;">&#9733;</span>
+        <span>Demonstrated Course Strengths</span>
+      </div>
+      {% if summary.strengths %}
+        {% for st in summary.strengths %}
+          <div class="insight-item">
+            <span style="font-weight: 600;">{{ st.subject_name }}</span>
+            <span class="mono" style="color: var(--accent-primary); font-weight: 700;">{{ st.avg_pct }}%</span>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p style="color: var(--text-muted); font-size: 0.85rem;">No subjects currently exceed the 65% strength benchmark.</p>
+      {% endif %}
+    </div>
+
+    <div class="insight-card">
+      <div class="insight-card-title">
+        <span style="color: var(--color-danger); font-size: 1.2rem;">&#9888;</span>
+        <span style="color: #FCA5A5;">Focus &amp; Improvement Opportunities</span>
+      </div>
+      {% if summary.improvements %}
+        {% for imp in summary.improvements %}
+          <div class="insight-item">
+            <span style="font-weight: 600;">{{ imp.subject_name }}</span>
+            <span class="mono" style="color: var(--color-danger); font-weight: 700;">{{ imp.avg_pct }}%</span>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p style="color: var(--text-muted); font-size: 0.85rem;">Student is meeting or exceeding benchmarks across all courses.</p>
+      {% endif %}
+    </div>
+  </div>
+
+{% else %}
+  <div class="empty-state">
+    <div class="empty-state-title">No Assessment Records Found</div>
+    <p class="empty-state-desc">This student has not yet had assessment marks recorded for any examination.</p>
+    <a href="{{ url_for('teacher.marks') }}" class="btn btn-primary btn-sm">Enter Marks for Student &rarr;</a>
+  </div>
+{% endif %}
+
+{% endblock %}

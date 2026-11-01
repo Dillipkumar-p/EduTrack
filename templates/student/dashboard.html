@@ -1,0 +1,130 @@
+{% extends "student/layout.html" %}
+
+{% block page_title %}Student Academic Dashboard{% endblock %}
+
+{% block portal_content %}
+<div class="page-header-row">
+  <div>
+    <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 4px;">Welcome back,</div>
+    <h1 class="page-headline">{{ summary.student.full_name }}</h1>
+    <p class="page-subheadline">
+      Roll Number: <span class="mono" style="color: var(--accent-primary); font-weight: 700;">{{ summary.student.roll_no }}</span> &bull; 
+      Section <span style="font-weight: 600;">{{ summary.student.section }}</span> &bull; 
+      Batch: <span>{{ summary.student.batch_year }}</span>
+    </p>
+  </div>
+  <a href="{{ url_for('student.report') }}" target="_blank" class="btn btn-primary btn-sm">
+    Print Official Report
+  </a>
+</div>
+
+<!-- Primary Academic Status Indicators -->
+<div class="metrics-row">
+  <div class="metric-card">
+    <span class="metric-label">Cumulative Performance</span>
+    <div class="metric-value metric-highlight">{{ summary.overall.percentage }}%</div>
+    <span class="metric-trend">{{ summary.overall.total_obtained }} / {{ summary.overall.total_max }} total marks</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Assigned Grade</span>
+    <div class="metric-value" style="color: var(--accent-primary);">{{ summary.overall.grade }}</div>
+    <span class="metric-trend">Institutional Scale</span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Academic Status</span>
+    <div class="metric-value" style="font-size: 1.6rem; {% if summary.overall.status == 'PASSED' %}color: var(--accent-primary);{% else %}color: var(--color-danger);{% endif %}">
+      {{ summary.overall.status }}
+    </div>
+    <span class="metric-trend">
+      {% if summary.overall.failed_subjects_count > 0 %}
+        {{ summary.overall.failed_subjects_count }} subject(s) below passing mark
+      {% else %}
+        All subjects cleared
+      {% endif %}
+    </span>
+  </div>
+
+  <div class="metric-card">
+    <span class="metric-label">Evaluated Courses</span>
+    <div class="metric-value">{{ summary.overall.total_entries }}</div>
+    <span class="metric-trend">Across {{ summary.exams|length }} exam tier(s)</span>
+  </div>
+</div>
+
+{% if summary.overall.assistance_needed %}
+<div style="padding: 18px 22px; background-color: var(--color-danger-bg); border: 1px solid rgba(239, 68, 68, 0.4); border-radius: var(--radius-md); margin-bottom: 32px; display: flex; align-items: flex-start; gap: 16px;">
+  <div style="font-size: 1.5rem; line-height: 1; color: var(--color-danger);">&#9888;</div>
+  <div>
+    <div style="font-size: 1rem; font-weight: 700; color: #FCA5A5; margin-bottom: 4px;">Faculty Assistance Recommended</div>
+    <div style="font-size: 0.885rem; color: var(--text-primary); line-height: 1.5;">
+      Your academic aggregate or individual subject scores indicate learning deficits. Please consult your respective course instructors during office hours for guided remediation and doubt clearance.
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Examination Summary Cards -->
+{% if summary.has_records %}
+  <div style="margin-bottom: 24px;">
+    <h2 style="font-size: 1.3rem; margin-bottom: 16px;">Examination Summary Cards</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+      {% for exam_code, exam in summary.exams.items() %}
+      <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span class="badge badge-muted mono">{{ exam.exam_code }}</span>
+            <span class="badge {% if exam.failed_count == 0 %}badge-lime{% else %}badge-danger{% endif %}">
+              {{ exam.status }}
+            </span>
+          </div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">{{ exam.exam_name }}</h3>
+          <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
+            Total Scored: <strong class="mono" style="color: var(--text-primary);">{{ exam.total_obtained }} / {{ exam.total_max }}</strong>
+          </div>
+        </div>
+
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.8rem;">
+            <span>Score Percentage</span>
+            <span class="mono" style="font-weight: 700; color: var(--accent-primary);">{{ exam.percentage }}%</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-fill-lime" style="width: {{ [exam.percentage, 100]|min }}%;"></div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+{% else %}
+  <div class="empty-state">
+    <div class="empty-state-title">No Examination Records Found</div>
+    <p class="empty-state-desc">Your course instructors have not yet entered marks for your profile. Check back once assessments are concluded.</p>
+  </div>
+{% endif %}
+
+<!-- Announcements Section -->
+{% if announcements %}
+<div class="card" style="margin-top: 32px;">
+  <div style="margin-bottom: 16px;">
+    <h3 style="font-size: 1.15rem; font-weight: 700;">Institutional Academic Notices</h3>
+    <p style="font-size: 0.8rem; color: var(--text-muted);">Current notifications published by the administration.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    {% for a in announcements %}
+      <div style="padding: 14px 18px; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+          <span class="badge badge-lime">{{ a.badge_text }}</span>
+          <strong style="color: var(--text-primary); font-size: 0.95rem;">{{ a.title }}</strong>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0;">{{ a.content }}</p>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

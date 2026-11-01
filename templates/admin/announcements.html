@@ -1,0 +1,117 @@
+{% extends "admin/layout.html" %}
+
+{% block page_title %}Announcements &amp; Notices{% endblock %}
+
+{% block portal_content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-headline">Institutional Announcements</h1>
+    <p class="page-subheadline">Broadcast semester timelines, grading milestones, and examination notifications.</p>
+  </div>
+  <button type="button" class="btn btn-primary" onclick="openModal('add-announcement-modal')">
+    + Create Announcement
+  </button>
+</div>
+
+<!-- Announcements Table -->
+{% if announcements %}
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Badge</th>
+        <th>Announcement Title</th>
+        <th>Content</th>
+        <th>Priority</th>
+        <th>Created</th>
+        <th>Status</th>
+        <th style="text-align: right;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for a in announcements %}
+      <tr>
+        <td>
+          <span class="badge badge-lime">{{ a.badge_text }}</span>
+        </td>
+        <td style="font-weight: 700; color: var(--text-primary);">{{ a.title }}</td>
+        <td style="color: var(--text-secondary); max-width: 320px;">{{ a.content }}</td>
+        <td class="mono">{{ a.priority }}</td>
+        <td style="font-size: 0.775rem; color: var(--text-muted);">
+          {{ a.created_at.strftime('%Y-%m-%d') if a.created_at else 'Recent' }}
+        </td>
+        <td>
+          {% if a.is_active %}
+            <span class="badge badge-lime">Active</span>
+          {% else %}
+            <span class="badge badge-muted">Hidden</span>
+          {% endif %}
+        </td>
+        <td style="text-align: right;">
+          <form action="{{ url_for('admin.toggle_announcement', announcement_id=a.announcement_id) }}" method="POST" style="display: inline-block;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-outline btn-sm">
+              {{ 'Hide' if a.is_active else 'Show' }}
+            </button>
+          </form>
+
+          <form action="{{ url_for('admin.delete_announcement', announcement_id=a.announcement_id) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Delete this announcement?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-state-title">No Announcements Published</div>
+  <p class="empty-state-desc">Create announcements to display urgent academic notices on the public site and student portal.</p>
+  <button type="button" class="btn btn-primary btn-sm" onclick="openModal('add-announcement-modal')">+ Create Announcement</button>
+</div>
+{% endif %}
+
+<!-- Modal: Add Announcement -->
+<div id="add-announcement-modal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 style="font-size: 1.2rem;">Publish New Announcement</h3>
+      <button type="button" class="modal-close" onclick="closeModal('add-announcement-modal')">&times;</button>
+    </div>
+
+    <form action="{{ url_for('admin.add_announcement') }}" method="POST">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-group">
+        <label class="form-label">Headline / Title <span class="required">*</span></label>
+        <input type="text" name="title" class="form-control" placeholder="Internal 2 Marks Finalized" required>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+        <div class="form-group">
+          <label class="form-label">Badge Label</label>
+          <input type="text" name="badge_text" class="form-control" value="Notice" placeholder="Urgent, Notice, Schedule">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Display Priority</label>
+          <input type="number" name="priority" class="form-control mono" value="10">
+          <div class="form-hint">Higher values appear first.</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Announcement Content <span class="required">*</span></label>
+        <textarea name="content" rows="4" class="form-control" placeholder="Detailed announcement copy..." required></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+        <button type="button" class="btn btn-secondary" onclick="closeModal('add-announcement-modal')">Cancel</button>
+        <button type="submit" class="btn btn-primary">Publish Announcement</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,111 @@
+{% extends "admin/layout.html" %}
+
+{% block page_title %}Institutional Partnership Enquiries{% endblock %}
+
+{% block portal_content %}
+<div class="page-header-row">
+  <div>
+    <h1 class="page-headline">Institutional Enquiries</h1>
+    <p class="page-subheadline">Submissions collected from colleges and academic institutions via the public contact form.</p>
+  </div>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar-card">
+  <form action="{{ url_for('admin.enquiries') }}" method="GET" class="toolbar-filters" style="width: 100%;">
+    <div style="flex: 1; max-width: 320px;">
+      <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Search by name, college, or phone...">
+    </div>
+
+    <div>
+      <select name="status" class="form-select" onchange="this.form.submit()">
+        <option value="">All Statuses</option>
+        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending Follow-Up</option>
+        <option value="contacted" {% if status_filter == 'contacted' %}selected{% endif %}>Contacted</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-secondary btn-sm">Filter</button>
+    {% if search or status_filter %}
+      <a href="{{ url_for('admin.enquiries') }}" class="btn btn-outline btn-sm">Reset</a>
+    {% endif %}
+
+    <div style="margin-left: auto; font-size: 0.85rem; color: var(--text-muted);">
+      Total: <strong>{{ enquiries|length }}</strong> enquiry submission(s)
+    </div>
+  </form>
+</div>
+
+<!-- Enquiries Table -->
+{% if enquiries %}
+<div class="table-wrapper">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>College / Institution</th>
+        <th>Contact Person</th>
+        <th>Phone Number</th>
+        <th>Email</th>
+        <th>Submitted</th>
+        <th>Status</th>
+        <th>Follow-Up Notes</th>
+        <th style="text-align: right;">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for enq in enquiries %}
+      <tr>
+        <td style="font-weight: 700; color: var(--text-primary);">
+          {{ enq.college_name }}
+          {% if enq.message %}
+            <div style="font-size: 0.775rem; color: var(--text-muted); font-weight: normal; margin-top: 4px; max-width: 240px;">
+              "{{ enq.message }}"
+            </div>
+          {% endif %}
+        </td>
+        <td>{{ enq.full_name }}</td>
+        <td class="mono" style="font-size: 0.825rem;">{{ enq.phone_number }}</td>
+        <td class="mono" style="font-size: 0.825rem; color: var(--text-secondary);">{{ enq.email_address or '—' }}</td>
+        <td style="font-size: 0.775rem; color: var(--text-muted);">
+          {{ enq.created_at.strftime('%Y-%m-%d %H:%M') if enq.created_at else 'Recent' }}
+        </td>
+        <td>
+          {% if enq.is_contacted %}
+            <span class="badge badge-lime">Contacted</span>
+          {% else %}
+            <span class="badge badge-warning">Pending</span>
+          {% endif %}
+        </td>
+        <td style="max-width: 200px;">
+          <form action="{{ url_for('admin.update_enquiry_notes', enquiry_id=enq.enquiry_id) }}" method="POST" style="display: flex; gap: 6px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="text" name="follow_up_notes" value="{{ enq.follow_up_notes or '' }}" class="form-control" style="padding: 4px 8px; font-size: 0.75rem;" placeholder="Add notes...">
+            <button type="submit" class="btn btn-secondary btn-sm" style="padding: 4px 8px; font-size: 0.75rem;">Save</button>
+          </form>
+        </td>
+        <td style="text-align: right;">
+          <form action="{{ url_for('admin.toggle_enquiry', enquiry_id=enq.enquiry_id) }}" method="POST" style="display: inline-block;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-outline btn-sm">
+              {{ 'Mark Pending' if enq.is_contacted else 'Mark Contacted' }}
+            </button>
+          </form>
+
+          <form action="{{ url_for('admin.delete_enquiry', enquiry_id=enq.enquiry_id) }}" method="POST" style="display: inline-block;" onsubmit="return confirm('Delete this enquiry record?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-state-title">No Enquiries Found</div>
+  <p class="empty-state-desc">Institutional requests submitted via the public homepage contact form will display here with live status tracking.</p>
+</div>
+{% endif %}
+
+{% endblock %}
