@@ -1,4 +1,4 @@
-﻿import re
+import re
 import os
 import time
 import uuid
@@ -11,7 +11,7 @@ from config import Config
 # In-memory settings cache with TTL
 _SETTINGS_CACHE = {}
 _SETTINGS_CACHE_TIME = 0
-CACHE_TTL_SECONDS = 30
+CACHE_TTL_SECONDS = 300  # 5 minutes cache to prevent repetitive DB queries on every request
 
 def get_client_ip():
     """Extract client IP address considering proxy headers like X-Forwarded-For."""

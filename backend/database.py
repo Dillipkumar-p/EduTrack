@@ -21,7 +21,8 @@ def get_connection_config():
         "charset": "utf8mb4",
         "use_unicode": True,
         "autocommit": False,
-        "connection_timeout": 10
+        "connection_timeout": 10,
+        "use_pure": False
     }
 
     # Handle SSL for Aiven or hosted MySQL
@@ -50,6 +51,20 @@ def init_pool():
         )
         logger.info(f"Initialized MySQL connection pool to {cfg['host']}:{cfg['port']}/{cfg['database']}")
     except Error as err:
+        # If C-extension is unavailable on some platforms, fallback to pure python driver
+        if "use_pure" in cfg:
+            cfg["use_pure"] = True
+            try:
+                _pool = pooling.MySQLConnectionPool(
+                    pool_name=Config.DB_POOL_NAME,
+                    pool_size=Config.DB_POOL_SIZE,
+                    pool_reset_session=True,
+                    **cfg
+                )
+                logger.info(f"Initialized MySQL connection pool (pure mode) to {cfg['host']}:{cfg['port']}/{cfg['database']}")
+                return _pool
+            except Error as pure_err:
+                err = pure_err
         logger.warning(f"Connection pool initialization warning: {err}. Falling back to direct connections.")
         _pool = None
     return _pool
