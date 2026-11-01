@@ -1,12 +1,8 @@
--- ==============================================================================
+﻿-- ==============================================================================
 -- EduTrack Database Schema (MySQL 8.0+)
 -- Production Schema for Student Academic Performance Management System
 -- Compatible with local MySQL and Aiven Managed Cloud MySQL
 -- ==============================================================================
-
-CREATE DATABASE IF NOT EXISTS edutrack_db
-    CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 USE edutrack_db;
 
 -- 1. USERS TABLE
@@ -187,7 +183,6 @@ INSERT IGNORE INTO subjects (subject_code, subject_name, max_marks, pass_marks, 
 ('CS101', 'Data Structures & Algorithms', 100, 40, 1),
 ('CS102', 'Database Management Systems', 100, 40, 1),
 ('CS103', 'Operating Systems', 100, 40, 1),
-('CS104', 'Computer Networks', 100, 40, 1),
 ('CS105', 'Object-Oriented Programming (Java)', 100, 40, 1);
 
 -- Default Examinations (Configured as required: Internal 1: 50/20, Internal 2: 50/20, Semester: 100/40)
@@ -210,7 +205,7 @@ INSERT IGNORE INTO website_settings (setting_key, setting_value, category) VALUE
 ('contact_visible', 'true', 'visibility'),
 ('announcements_visible', 'true', 'visibility'),
 ('primary_accent_color', '#C8F169', 'appearance'),
-('contact_email', 'contact@edutrack.edu', 'contact'),
+('contact_email', 'contact@EduTrack.edu', 'contact'),
 ('contact_phone', '+91 (800) 456-7890', 'contact'),
 ('contact_college_placeholder', 'Malla Reddy University / JNTUH', 'contact'),
 ('contact_address', 'EduTrack Academic Complex, HITEC City, Hyderabad', 'contact'),
@@ -224,4 +219,4 @@ INSERT IGNORE INTO announcements (title, content, badge_text, is_active, priorit
 -- Username: admin
 -- Password: AdminPassword@2026
 INSERT IGNORE INTO users (user_id, username, email, password_hash, role, is_active) VALUES
-(1, 'admin', 'admin@edutrack.edu', 'scrypt:32768:8:1$WpZDUnAoN669A7OI$65abed3aae5f4b8642a2afd3daec753f185d494d9e7b7c3ffc264a97862b9d8eb79db1425e5b8797174a09b995b635fc28ac0fb49a317ffcf4d05be408cab3b5', 'admin', 1);
+(1, 'admin', 'admin@EduTrack.edu', 'scrypt:32768:8:1$WpZDUnAoN669A7OI$65abed3aae5f4b8642a2afd3daec753f185d494d9e7b7c3ffc264a97862b9d8eb79db1425e5b8797174a09b995b635fc28ac0fb49a317ffcf4d05be408cab3b5', 'admin', 1);

@@ -1,5 +1,5 @@
-/* ==============================================================================
-   EDUTRACK PUBLIC HOMEPAGE STYLES
+﻿/* ==============================================================================
+   EduTrack PUBLIC HOMEPAGE STYLES
    Editorial Dark + Lime Green UI
    ============================================================================== */
 
@@ -423,7 +423,7 @@
 }
 
 .role-capability-item::before {
-  content: "→";
+  content: "â†’";
   color: var(--accent-primary);
   font-weight: bold;
 }

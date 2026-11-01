@@ -8,7 +8,7 @@ load_dotenv(BASE_DIR / ".env")
 
 class Config:
     """Base application configuration."""
-    SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "edutrack-production-secret-key-default-2026-v1")
+    SECRET_KEY = os.getenv("FLASK_SECRET_KEY", "EduTrack-production-secret-key-default-2026-v1")
     FLASK_ENV = os.getenv("FLASK_ENV", "production")
     DEBUG = os.getenv("FLASK_DEBUG", "0") in ("1", "true", "True")
 

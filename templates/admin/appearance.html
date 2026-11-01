@@ -1,4 +1,4 @@
-{% extends "admin/layout.html" %}
+﻿{% extends "admin/layout.html" %}
 
 {% block page_title %}Website Appearance &amp; Content{% endblock %}
 
@@ -157,7 +157,7 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
           <div class="form-group">
             <label class="form-label" for="contact_email">Admissions Email</label>
-            <input type="email" id="contact_email" name="contact_email" class="form-control" value="{{ settings.contact_email|default('contact@edutrack.edu') }}">
+            <input type="email" id="contact_email" name="contact_email" class="form-control" value="{{ settings.contact_email|default('contact@EduTrack.edu') }}">
           </div>
           <div class="form-group">
             <label class="form-label" for="contact_phone">Helpline Telephone</label>

@@ -1,11 +1,11 @@
-import smtplib
+﻿import smtplib
 import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 from config import Config
 
-logger = logging.getLogger("edutrack.email")
+logger = logging.getLogger("EduTrack.email")
 
 def send_enquiry_notification(enquiry_data):
     """

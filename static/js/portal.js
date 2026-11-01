@@ -1,4 +1,4 @@
-// EduTrack Portal JavaScript Helpers
+﻿// EduTrack Portal JavaScript Helpers
 
 document.addEventListener('DOMContentLoaded', () => {
   // Live marks calculator in Marks Entry form

@@ -1,4 +1,4 @@
-// EduTrack Core JavaScript
+﻿// EduTrack Core JavaScript
 
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Alert auto-dismiss and close buttons

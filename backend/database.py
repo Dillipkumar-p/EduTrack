@@ -1,4 +1,4 @@
-import os
+﻿import os
 import logging
 from pathlib import Path
 from contextlib import contextmanager
@@ -6,7 +6,7 @@ import mysql.connector
 from mysql.connector import pooling, Error
 from config import Config
 
-logger = logging.getLogger("edutrack.database")
+logger = logging.getLogger("EduTrack.database")
 
 _pool = None
 
@@ -157,7 +157,7 @@ def init_database_schema():
     statements = [s.strip() for s in content.split(";") if s.strip()]
     
     cfg = get_connection_config()
-    db_name = cfg.pop("database", "edutrack_db")
+    db_name = cfg.pop("database", "EduTrack_db")
 
     try:
         # First ensure database exists

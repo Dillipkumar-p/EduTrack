@@ -1,4 +1,4 @@
-import logging
+﻿import logging
 from flask import Flask, render_template, session
 from flask_wtf.csrf import CSRFProtect, CSRFError
 from config import Config
@@ -10,7 +10,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 )
-logger = logging.getLogger("edutrack")
+logger = logging.getLogger("EduTrack")
 
 csrf = CSRFProtect()
 

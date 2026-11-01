@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+﻿from flask import Blueprint, render_template, request, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash
 from backend.auth import login_required, role_required
 from backend.database import execute_query
@@ -223,13 +223,21 @@ def marks():
             return redirect(url_for("teacher.marks"))
 
         # Look up exam default max marks and pass marks
-        exam = execute_query("SELECT default_max_marks, default_pass_marks, exam_name FROM examinations WHERE exam_id = %s", (exam_id,), fetch="one")
+        exam = execute_query("SELECT default_max_marks, default_pass_marks, exam_name, exam_type FROM examinations WHERE exam_id = %s", (exam_id,), fetch="one")
         if not exam:
             flash("Invalid examination selected.", "error")
             return redirect(url_for("teacher.marks"))
 
         max_marks = exam["default_max_marks"]
         pass_marks = exam["default_pass_marks"]
+
+        # Internal exams (internal_1 / internal_2) are capped at 50 marks
+        INTERNAL_TYPES = ("internal_1", "internal_2")
+        if exam["exam_type"] in INTERNAL_TYPES and max_marks > 50:
+            max_marks = 50
+        if exam["exam_type"] in INTERNAL_TYPES and marks_obtained > 50:
+            flash(f"Internal examination marks cannot exceed 50. Entered: {marks_obtained}.", "error")
+            return redirect(url_for("teacher.marks"))
 
         # Validate marks against maximum marks
         if marks_obtained > max_marks:
@@ -301,7 +309,7 @@ def marks():
     marks_list = execute_query(sql, tuple(params), fetch="all") or []
     all_students = execute_query("SELECT student_id, roll_no, full_name, section FROM students ORDER BY roll_no ASC", fetch="all") or []
     all_subjects = execute_query("SELECT subject_id, subject_code, subject_name, max_marks FROM subjects WHERE is_active = 1 ORDER BY subject_name ASC", fetch="all") or []
-    all_exams = execute_query("SELECT exam_id, exam_code, exam_name, default_max_marks, default_pass_marks FROM examinations WHERE is_active = 1 ORDER BY exam_id ASC", fetch="all") or []
+    all_exams = execute_query("SELECT exam_id, exam_code, exam_name, exam_type, default_max_marks, default_pass_marks FROM examinations WHERE is_active = 1 ORDER BY exam_id ASC", fetch="all") or []
     sections = execute_query("SELECT DISTINCT section FROM students ORDER BY section ASC", fetch="all") or []
 
     return render_template(

@@ -1,4 +1,4 @@
-"""
+﻿"""
 EduTrack Database Health Diagnostic
 Run with: python check_db.py
 Verifies connection to MySQL (Local or Aiven Cloud) and reports table status.

@@ -1,4 +1,4 @@
-import re
+﻿import re
 import os
 import time
 import uuid
@@ -118,7 +118,7 @@ def get_website_settings(force_refresh=False):
             "contact_visible": "true",
             "announcements_visible": "true",
             "primary_accent_color": "#C8F169",
-            "contact_email": "contact@edutrack.edu",
+            "contact_email": "contact@EduTrack.edu",
             "contact_phone": "+91 (800) 456-7890",
             "contact_college_placeholder": "Institution Name",
             "contact_address": "EduTrack Academic Complex",

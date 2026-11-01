@@ -54,7 +54,10 @@
         <select id="exam_id" name="exam_id" class="form-select" required>
           <option value="">-- Choose Examination Tier --</option>
           {% for ex in examinations %}
-            <option value="{{ ex.exam_id }}" data-max="{{ ex.default_max_marks }}" data-pass="{{ ex.default_pass_marks }}">
+            <option value="{{ ex.exam_id }}"
+                    data-max="{{ ex.default_max_marks }}"
+                    data-pass="{{ ex.default_pass_marks }}"
+                    data-type="{{ ex.exam_type }}">
               {{ ex.exam_name }} ({{ ex.exam_code }}) – Max {{ ex.default_max_marks }} (Pass: {{ ex.default_pass_marks }})
             </option>
           {% endfor %}
@@ -206,6 +209,48 @@
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/portal.js') }}"></script>
 <script>
+// Internal exam types that are capped at 50 marks
+const INTERNAL_TYPES = ['internal_1', 'internal_2'];
+const INTERNAL_CAP = 50;
+
+const examSelect     = document.getElementById('exam_id');
+const marksInput     = document.getElementById('marks_obtained');
+const marksPreview   = document.getElementById('marks-preview');
+
+function updateMarksConstraints() {
+  const selected = examSelect.options[examSelect.selectedIndex];
+  if (!selected || !selected.value) {
+    marksInput.removeAttribute('max');
+    marksPreview.innerHTML = '';
+    return;
+  }
+
+  const examType = selected.dataset.type || '';
+  const rawMax   = parseFloat(selected.dataset.max) || 0;
+  const isInternal = INTERNAL_TYPES.includes(examType);
+  const effectiveMax = isInternal ? Math.min(rawMax, INTERNAL_CAP) : rawMax;
+
+  marksInput.max = effectiveMax;
+
+  // Clamp current value if it already exceeds the new cap
+  if (marksInput.value !== '' && parseFloat(marksInput.value) > effectiveMax) {
+    marksInput.value = effectiveMax;
+  }
+
+  if (isInternal) {
+    marksPreview.innerHTML =
+      `<span style="font-size:0.8rem; color: var(--accent-warning, #f59e0b);">` +
+      `&#9888; Internal exam — maximum marks capped at <strong>${INTERNAL_CAP}</strong>.</span>`;
+  } else {
+    marksPreview.innerHTML =
+      `<span style="font-size:0.8rem; color: var(--text-muted);">Maximum marks: <strong>${effectiveMax}</strong>.</span>`;
+  }
+}
+
+// Run on page load and on change
+examSelect.addEventListener('change', updateMarksConstraints);
+updateMarksConstraints();
+
 function openEditMarkModal(markId, rollNo, subCode, examCode, obtained, maxMarks, remarks) {
   document.getElementById('edit-mark-form').action = '/teacher/marks/edit/' + markId;
   document.getElementById('edit-mark-info').textContent = rollNo + ' (' + subCode + ' - ' + examCode + ')';

@@ -1,4 +1,4 @@
-import os
+﻿import os
 import sys
 from backend import create_app
 from backend.database import init_database_schema, execute_query
@@ -20,7 +20,7 @@ def run_create_admin():
     print(" EduTrack Initial Administrator Setup")
     print("=" * 50)
     username = input("Enter admin username [admin]: ").strip() or "admin"
-    email = input("Enter admin email [admin@edutrack.edu]: ").strip() or "admin@edutrack.edu"
+    email = input("Enter admin email [admin@EduTrack.edu]: ").strip() or "admin@EduTrack.edu"
     password = getpass.getpass("Enter secure admin password: ").strip()
 
     if not password or len(password) < 6:

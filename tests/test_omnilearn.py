@@ -1,4 +1,4 @@
-import unittest
+﻿import unittest
 from backend import create_app
 from backend.database import execute_query
 from backend.analytics import calculate_grade, get_student_academic_summary, get_institutional_analytics
@@ -174,7 +174,7 @@ class EduTrackTestCase(unittest.TestCase):
                 "announcements_visible": "1",
                 "about_heading": "Engineered for Clarity",
                 "about_body": "Updated about section text.",
-                "contact_email": "dean@edutrack.edu",
+                "contact_email": "dean@EduTrack.edu",
                 "contact_phone": "+91 800 123456",
                 "contact_college_placeholder": "Test University",
                 "contact_address": "Main Academic Block"

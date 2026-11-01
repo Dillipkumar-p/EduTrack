@@ -1,6 +1,6 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 
-{% block title %}{{ settings.site_title|default('EduTrack') }} – {{ settings.site_tagline|default('Academic Performance, Made Visible.') }}{% endblock %}
+{% block title %}{{ settings.site_title|default('EduTrack') }} â€“ {{ settings.site_tagline|default('Academic Performance, Made Visible.') }}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/public.css') }}">
@@ -202,7 +202,7 @@
       <span class="section-label">Core Architecture</span>
       <h2 class="section-title">Built for Rigorous Academic Workflows</h2>
       <p class="section-subtitle">
-        Every capability in EduTrack operates against real database constraints and normalized records—no placeholders or simulated statistics.
+        Every capability in EduTrack operates against real database constraints and normalized recordsâ€”no placeholders or simulated statistics.
       </p>
     </div>
 
@@ -389,7 +389,7 @@
         <div style="display: flex; flex-direction: column; gap: 20px;">
           <div class="contact-item">
             <span class="contact-item-label">Admissions & Onboarding</span>
-            <div class="contact-item-value">{{ settings.contact_email|default('contact@edutrack.edu') }}</div>
+            <div class="contact-item-value">{{ settings.contact_email|default('contact@EduTrack.edu') }}</div>
           </div>
 
           <div class="contact-item">
@@ -487,7 +487,7 @@
       <div>
         <h4 class="footer-col-title">Contact</h4>
         <ul class="footer-links">
-          <li class="mono" style="font-size: 0.825rem; color: var(--text-secondary);">{{ settings.contact_email|default('contact@edutrack.edu') }}</li>
+          <li class="mono" style="font-size: 0.825rem; color: var(--text-secondary);">{{ settings.contact_email|default('contact@EduTrack.edu') }}</li>
           <li class="mono" style="font-size: 0.825rem; color: var(--text-secondary);">{{ settings.contact_phone|default('+91 (800) 456-7890') }}</li>
         </ul>
       </div>

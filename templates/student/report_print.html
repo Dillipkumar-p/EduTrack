@@ -1,8 +1,8 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Official Academic Performance Report – {{ summary.student.roll_no }}</title>
+  <title>Official Academic Performance Report â€“ {{ summary.student.roll_no }}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/print.css') }}">
   <style>
     /* Screen display styles */
@@ -184,7 +184,7 @@
     {% if summary.has_records %}
       {% for exam_code, exam in summary.exams.items() %}
         <div style="margin-top: 18px; margin-bottom: 6px; font-weight: bold; font-size: 13px; text-transform: uppercase;">
-          {{ exam.exam_name }} ({{ exam.exam_code }}) – Total Marks: {{ exam.total_max }}
+          {{ exam.exam_name }} ({{ exam.exam_code }}) â€“ Total Marks: {{ exam.total_max }}
         </div>
         <table class="transcript-table">
           <thead>
@@ -211,7 +211,7 @@
             <tr style="background-color: #FAFAFA; font-weight: bold;">
               <td colspan="2" style="text-align: right;">Tier Total:</td>
               <td style="text-align: center;">{{ exam.total_max }}</td>
-              <td style="text-align: center;">—</td>
+              <td style="text-align: center;">â€”</td>
               <td style="text-align: center;">{{ exam.total_obtained }}</td>
               <td style="text-align: center;">{{ exam.percentage }}%</td>
             </tr>
