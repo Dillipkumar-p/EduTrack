@@ -166,40 +166,48 @@ def login():
 
 @auth_bp.route("/demo")
 def demo_login():
-    """Instant one-click demo login for reviewing the student portal safely."""
-    # 1. Try to find an existing active student
+    """
+    Instant one-click demo login.
+    Privacy Guarantee: Exclusively uses an isolated dummy student profile ('DEMO2026MBU')
+    so real enrolled students' personal details and marks remain 100% confidential.
+    """
+    demo_roll = "DEMO2026MBU"
+
+    # 1. Look for the dedicated privacy dummy student
     student = execute_query(
         """SELECT s.student_id, s.roll_no, s.full_name, s.section, u.user_id, u.username, u.email, u.role
            FROM students s
            JOIN users u ON s.user_id = u.user_id
-           WHERE u.is_active = 1
-           ORDER BY s.student_id ASC
+           WHERE s.roll_no = %s
            LIMIT 1""",
+        (demo_roll,),
         fetch="one"
     )
 
-    # 2. If NO student exists at all, automatically auto-provision a realistic demo student
+    # 2. Auto-provision dummy student if not yet initialized in the active database
     if not student:
-        demo_roll = "24MBU001"
-        demo_email = "demo.student@mbu.edu.in"
-        demo_pwd_hash = generate_password_hash("DemoStudent@123")
+        demo_email = "demo.student@edutrack.edu"
+        demo_pwd_hash = generate_password_hash("DemoStudent@2026")
 
         u_res = execute_query(
-            "INSERT INTO users (username, email, password_hash, role, is_active) VALUES (%s, %s, %s, 'student', 1)",
+            """INSERT INTO users (username, email, password_hash, role, is_active)
+               VALUES (%s, %s, %s, 'student', 1)
+               ON DUPLICATE KEY UPDATE email=VALUES(email), is_active=1""",
             (demo_roll, demo_email, demo_pwd_hash),
             commit=True
         )
-        u_id = u_res["lastrowid"]
+        u_id = execute_query("SELECT user_id FROM users WHERE username = %s", (demo_roll,), fetch="val")
 
-        s_res = execute_query(
-            """INSERT INTO students (user_id, roll_no, full_name, email, section, batch_year)
-               VALUES (%s, %s, 'K. Nanda Kesavan', %s, 'A', '2024-2028')""",
+        execute_query(
+            """INSERT INTO students (user_id, roll_no, full_name, email, phone, section, batch_year)
+               VALUES (%s, %s, 'Demo Student (K. Nanda Kesavan)', %s, '+91 98765 00000', 'A', '2024-2028')
+               ON DUPLICATE KEY UPDATE full_name=VALUES(full_name), email=VALUES(email)""",
             (u_id, demo_roll, demo_email),
             commit=True
         )
-        s_id = s_res["lastrowid"]
+        s_id = execute_query("SELECT student_id FROM students WHERE user_id = %s", (u_id,), fetch="val")
 
-        # Seed sample marks across existing subjects and exams
+        # Seed comprehensive sample marks across all active courses and exam tiers
         subs = execute_query("SELECT subject_id FROM subjects WHERE is_active = 1", fetch="all") or []
         exams = execute_query("SELECT exam_id, exam_type, default_max_marks, default_pass_marks FROM examinations WHERE is_active = 1", fetch="all") or []
 
@@ -211,7 +219,8 @@ def demo_login():
                 score = 44.5 if is_internal else 88.0
                 execute_query(
                     """INSERT INTO marks (student_id, subject_id, exam_id, marks_obtained, max_marks, pass_marks, remarks, entered_by)
-                       VALUES (%s, %s, %s, %s, %s, %s, 'Demonstrated excellent academic proficiency', %s)""",
+                       VALUES (%s, %s, %s, %s, %s, %s, 'Demonstrated excellent academic proficiency', %s)
+                       ON DUPLICATE KEY UPDATE marks_obtained=VALUES(marks_obtained)""",
                     (s_id, sub["subject_id"], ex["exam_id"], score, max_m, pass_m, u_id),
                     commit=True
                 )
@@ -223,7 +232,7 @@ def demo_login():
             "role": "student",
             "student_id": s_id,
             "roll_no": demo_roll,
-            "full_name": "K. Nanda Kesavan",
+            "full_name": "Demo Student (K. Nanda Kesavan)",
             "section": "A"
         }
 
@@ -239,8 +248,8 @@ def demo_login():
     session["is_demo"] = True
     session.permanent = True
 
-    log_audit("DEMO_STUDENT_ACCESSED", target_type="user", target_id=student["user_id"], details="Visitor explored student demo portal")
-    flash(f"Welcome to the Student Interactive Demo as {student['full_name']} ({student['roll_no']})!", "info")
+    log_audit("DEMO_STUDENT_ACCESSED", target_type="user", target_id=student["user_id"], details="Visitor explored isolated dummy student demo")
+    flash(f"Welcome to the Interactive Student Demo as {student['full_name']} ({student['roll_no']})!", "info")
     return redirect(url_for("student.dashboard"))
 
 @auth_bp.route("/logout")
