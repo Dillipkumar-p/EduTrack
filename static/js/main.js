@@ -1,4 +1,4 @@
-﻿// EduTrack Core JavaScript
+// EduTrack Core JavaScript
 
 document.addEventListener('DOMContentLoaded', () => {
   // 1. Alert auto-dismiss and close buttons
@@ -81,4 +81,35 @@ window.addEventListener('click', (e) => {
     e.target.classList.remove('active');
     document.body.style.overflow = '';
   }
+});
+
+// Theme Toggle (Dark / Light Mode)
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  try {
+    localStorage.setItem('edutrack_theme', newTheme);
+  } catch (e) {}
+  updateThemeToggleLabels(newTheme);
+}
+
+function updateThemeToggleLabels(theme) {
+  const btns = document.querySelectorAll('.theme-toggle-btn');
+  btns.forEach(btn => {
+    if (theme === 'light') {
+      btn.innerHTML = '🌙 Dark Mode';
+      btn.title = 'Switch to Dark Mode';
+    } else {
+      btn.innerHTML = '☀️ Light Mode';
+      btn.title = 'Switch to Light Mode';
+    }
+  });
+}
+
+// Initial theme check on DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+  const savedTheme = localStorage.getItem('edutrack_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateThemeToggleLabels(savedTheme);
 });

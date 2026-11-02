@@ -164,6 +164,40 @@ def login():
 
     return render_template("auth/login.html")
 
+@auth_bp.route("/demo")
+def demo_login():
+    """Instant one-click demo login for reviewing the student portal safely."""
+    # Find active student in system
+    student = execute_query(
+        """SELECT s.student_id, s.roll_no, s.full_name, s.section, u.user_id, u.username, u.email, u.role
+           FROM students s
+           JOIN users u ON s.user_id = u.user_id
+           WHERE u.is_active = 1
+           ORDER BY s.student_id ASC
+           LIMIT 1""",
+        fetch="one"
+    )
+
+    if not student:
+        flash("No active student records available for demo. Please login with your credentials.", "warning")
+        return redirect(url_for("auth.login"))
+
+    session.clear()
+    session["user_id"] = student["user_id"]
+    session["username"] = student["username"]
+    session["email"] = student["email"]
+    session["role"] = "student"
+    session["student_id"] = student["student_id"]
+    session["roll_no"] = student["roll_no"]
+    session["full_name"] = student["full_name"]
+    session["section"] = student["section"]
+    session["is_demo"] = True
+    session.permanent = True
+
+    log_audit("DEMO_STUDENT_ACCESSED", target_type="user", target_id=student["user_id"], details="Visitor explored student demo portal")
+    flash(f"Welcome to the Student Interactive Demo as {student['full_name']} ({student['roll_no']})!", "info")
+    return redirect(url_for("student.dashboard"))
+
 @auth_bp.route("/logout")
 def logout():
     user_id = session.get("user_id")

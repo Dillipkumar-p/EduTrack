@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/portal.css') }}">
@@ -58,7 +58,13 @@
         <button id="sidebar-toggle" class="btn btn-outline btn-sm mobile-menu-btn" style="display: none;" aria-label="Toggle navigation">&#9776;</button>
         <div class="topbar-title">{% block page_title %}Academic Scorecard{% endblock %}</div>
       </div>
-      <div class="topbar-tools">
+      <div class="topbar-tools" style="display: flex; align-items: center; gap: 12px;">
+        <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" title="Switch Light/Dark Mode">
+          ☀️ Light Mode
+        </button>
+        {% if session.get('is_demo') %}
+          <span class="badge badge-warning" style="font-size: 0.75rem;">Interactive Demo</span>
+        {% endif %}
         <span class="mono" style="font-size: 0.85rem; color: var(--accent-primary); font-weight: 700;">
           {{ session.get('roll_no', '') }}
         </span>

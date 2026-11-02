@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block title %}{{ settings.site_title|default('EduTrack') }} â€“ {{ settings.site_tagline|default('Academic Performance, Made Visible.') }}{% endblock %}
 
@@ -35,7 +35,17 @@
       {% endif %}
     </ul>
 
-    <div class="nav-cta-group">
+    <div class="nav-cta-group" style="display: flex; align-items: center; gap: 8px;">
+      <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" title="Switch Light/Dark Mode">
+        ☀️ Light Mode
+      </button>
+
+      {% if not current_user.is_authenticated %}
+        <a href="{{ url_for('auth.demo_login') }}" class="btn btn-outline btn-sm" style="border-color: var(--accent-primary); color: var(--accent-primary);" title="Explore live student demo dashboard">
+          Live Demo
+        </a>
+      {% endif %}
+
       {% if current_user.is_authenticated %}
         {% if current_user.role == 'admin' %}
           <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary btn-sm">Admin Portal</a>
@@ -75,10 +85,13 @@
         <p class="hero-description">
           {{ settings.hero_subheadline|default('EduTrack brings students, teachers and academic performance together in one intelligent platform. Track progress, manage results and make better academic decisions.') }}
         </p>
-        <div class="hero-actions">
+        <div class="hero-actions" style="display: flex; gap: 12px; flex-wrap: wrap;">
           <a href="#features" class="btn btn-primary btn-lg">Explore Features</a>
           {% if not current_user.is_authenticated %}
-            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-lg">Access Portal</a>
+            <a href="{{ url_for('auth.demo_login') }}" class="btn btn-secondary btn-lg" style="border: 1px solid var(--accent-primary); display: flex; align-items: center; gap: 8px;">
+              <span>⚡ Try Student Demo</span>
+            </a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-lg">Portal Sign In</a>
           {% else %}
             {% if current_user.role == 'admin' %}
               <a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary btn-lg">Go to Dashboard</a>

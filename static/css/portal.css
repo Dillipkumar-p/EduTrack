@@ -1,4 +1,4 @@
-﻿/* ==============================================================================
+/* ==============================================================================
    EduTrack PORTAL STYLES (ADMIN, TEACHER, STUDENT)
    Distinctive Dark Academic Workspaces
    ============================================================================== */
@@ -91,12 +91,12 @@
 
 .sidebar-link:hover {
   color: var(--text-primary);
-  background-color: rgba(255, 255, 255, 0.03);
+  background-color: var(--bg-hover);
 }
 
 .sidebar-link.active {
   color: var(--accent-primary);
-  background-color: rgba(200, 241, 105, 0.08);
+  background-color: var(--accent-glow);
   font-weight: 600;
   border-left: 3px solid var(--accent-primary);
 }
