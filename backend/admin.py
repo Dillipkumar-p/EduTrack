@@ -42,6 +42,7 @@ def dashboard():
            JOIN students s ON m.student_id = s.student_id
            JOIN subjects sub ON m.subject_id = sub.subject_id
            JOIN examinations e ON m.exam_id = e.exam_id
+           WHERE s.roll_no != 'DEMO2026MBU'
            ORDER BY m.created_at DESC LIMIT 6""",
         fetch="all"
     ) or []
@@ -65,7 +66,7 @@ def students():
         SELECT s.student_id, s.user_id, s.roll_no, s.full_name, s.email, s.phone, s.section, s.batch_year, u.is_active, u.created_at
         FROM students s
         JOIN users u ON s.user_id = u.user_id
-        WHERE 1=1
+        WHERE s.roll_no != 'DEMO2026MBU'
     """
     params = []
     if search:
@@ -544,7 +545,7 @@ def marks():
         JOIN subjects sub ON m.subject_id = sub.subject_id
         JOIN examinations e ON m.exam_id = e.exam_id
         LEFT JOIN users u ON m.entered_by = u.user_id
-        WHERE 1=1
+        WHERE s.roll_no != 'DEMO2026MBU'
     """
     params = []
     if exam_filter:

@@ -197,12 +197,12 @@ def get_institutional_analytics(section_filter=None, exam_filter=None):
     threshold = get_assistance_threshold()
 
     # Counts
-    total_students = execute_query("SELECT COUNT(*) AS c FROM students", fetch="val") or 0
+    total_students = execute_query("SELECT COUNT(*) AS c FROM students WHERE roll_no != 'DEMO2026MBU'", fetch="val") or 0
     total_teachers = execute_query("SELECT COUNT(*) AS c FROM teachers", fetch="val") or 0
     total_subjects = execute_query("SELECT COUNT(*) AS c FROM subjects WHERE is_active = 1", fetch="val") or 0
     total_exams = execute_query("SELECT COUNT(*) AS c FROM examinations WHERE is_active = 1", fetch="val") or 0
 
-    # Query all marks
+    # Query all marks (excluding demo student from official cohort metrics)
     base_sql = """
         SELECT 
             m.mark_id, m.marks_obtained, m.max_marks, m.pass_marks,
@@ -213,7 +213,7 @@ def get_institutional_analytics(section_filter=None, exam_filter=None):
         JOIN students s ON m.student_id = s.student_id
         JOIN subjects sub ON m.subject_id = sub.subject_id
         JOIN examinations e ON m.exam_id = e.exam_id
-        WHERE 1=1
+        WHERE s.roll_no != 'DEMO2026MBU'
     """
     params = []
     if section_filter and section_filter != "All":
