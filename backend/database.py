@@ -35,20 +35,22 @@ def get_connection_config():
     return cfg
 
 def init_pool():
-    """Initialize MySQL connection pool."""
+    """Initialize MySQL connection pool with persistent keep-alive."""
     global _pool
     if _pool is not None:
         return _pool
 
     cfg = get_connection_config()
+    # Increase pool size to 10 for concurrent multi-threaded requests
+    pool_size = max(Config.DB_POOL_SIZE, 10)
     try:
         _pool = pooling.MySQLConnectionPool(
             pool_name=Config.DB_POOL_NAME,
-            pool_size=Config.DB_POOL_SIZE,
-            pool_reset_session=True,
+            pool_size=pool_size,
+            pool_reset_session=False,
             **cfg
         )
-        logger.info(f"Initialized MySQL connection pool to {cfg['host']}:{cfg['port']}/{cfg['database']}")
+        logger.info(f"Initialized MySQL connection pool ({pool_size} conns) to {cfg['host']}:{cfg['port']}/{cfg['database']}")
     except Error as err:
         logger.warning(f"Connection pool initialization warning: {err}. Falling back to direct connections.")
         _pool = None
