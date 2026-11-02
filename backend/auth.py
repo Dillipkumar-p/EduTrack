@@ -167,7 +167,7 @@ def login():
 @auth_bp.route("/demo")
 def demo_login():
     """Instant one-click demo login for reviewing the student portal safely."""
-    # Find active student in system
+    # 1. Try to find an existing active student
     student = execute_query(
         """SELECT s.student_id, s.roll_no, s.full_name, s.section, u.user_id, u.username, u.email, u.role
            FROM students s
@@ -178,9 +178,54 @@ def demo_login():
         fetch="one"
     )
 
+    # 2. If NO student exists at all, automatically auto-provision a realistic demo student
     if not student:
-        flash("No active student records available for demo. Please login with your credentials.", "warning")
-        return redirect(url_for("auth.login"))
+        demo_roll = "24MBU001"
+        demo_email = "demo.student@mbu.edu.in"
+        demo_pwd_hash = generate_password_hash("DemoStudent@123")
+
+        u_res = execute_query(
+            "INSERT INTO users (username, email, password_hash, role, is_active) VALUES (%s, %s, %s, 'student', 1)",
+            (demo_roll, demo_email, demo_pwd_hash),
+            commit=True
+        )
+        u_id = u_res["lastrowid"]
+
+        s_res = execute_query(
+            """INSERT INTO students (user_id, roll_no, full_name, email, section, batch_year)
+               VALUES (%s, %s, 'K. Nanda Kesavan', %s, 'A', '2024-2028')""",
+            (u_id, demo_roll, demo_email),
+            commit=True
+        )
+        s_id = s_res["lastrowid"]
+
+        # Seed sample marks across existing subjects and exams
+        subs = execute_query("SELECT subject_id FROM subjects WHERE is_active = 1", fetch="all") or []
+        exams = execute_query("SELECT exam_id, exam_type, default_max_marks, default_pass_marks FROM examinations WHERE is_active = 1", fetch="all") or []
+
+        for sub in subs:
+            for ex in exams:
+                is_internal = ex["exam_type"] in ("internal_1", "internal_2")
+                max_m = 50 if is_internal else 100
+                pass_m = 20 if is_internal else 40
+                score = 44.5 if is_internal else 88.0
+                execute_query(
+                    """INSERT INTO marks (student_id, subject_id, exam_id, marks_obtained, max_marks, pass_marks, remarks, entered_by)
+                       VALUES (%s, %s, %s, %s, %s, %s, 'Demonstrated excellent academic proficiency', %s)""",
+                    (s_id, sub["subject_id"], ex["exam_id"], score, max_m, pass_m, u_id),
+                    commit=True
+                )
+
+        student = {
+            "user_id": u_id,
+            "username": demo_roll,
+            "email": demo_email,
+            "role": "student",
+            "student_id": s_id,
+            "roll_no": demo_roll,
+            "full_name": "K. Nanda Kesavan",
+            "section": "A"
+        }
 
     session.clear()
     session["user_id"] = student["user_id"]
