@@ -53,7 +53,7 @@ EduTrack is an institutional Student Academic Performance Management Platform bu
 
 1. **Clone repository & navigate to project:**
    ```bash
-   git clone https://github.com/Dillipkumar-p/EduTrack
+   git clone https://github.com/Dillipkumar-p/EduTrack.git
    cd EduTrack
    ```
 
