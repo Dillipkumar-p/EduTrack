@@ -1,4 +1,4 @@
-﻿-- ==============================================================================
+-- ==============================================================================
 -- EduTrack Database Schema (MySQL 8.0+)
 -- Production Schema for Student Academic Performance Management System
 -- Compatible with local MySQL and Aiven Managed Cloud MySQL
@@ -219,4 +219,4 @@ INSERT IGNORE INTO announcements (title, content, badge_text, is_active, priorit
 -- Username: admin
 -- Password: AdminPassword@2026
 INSERT IGNORE INTO users (user_id, username, email, password_hash, role, is_active) VALUES
-(1, 'admin', 'admin@EduTrack.edu', 'scrypt:32768:8:1$WpZDUnAoN669A7OI$65abed3aae5f4b8642a2afd3daec753f185d494d9e7b7c3ffc264a97862b9d8eb79db1425e5b8797174a09b995b635fc28ac0fb49a317ffcf4d05be408cab3b5', 'admin', 1);
+(1, 'admin', 'admin@EduTrack.edu', 'scrypt:32768:8:1$o15syEn60gjSGWG6$a6b69cb745e6766ed5a51bda81c2af5c66755ae779e6a4ea4aca71a5f7037f1235061ba10fb9b6e8cf3e479dfa19168fde785bc13712c7074075dec77ba35d8f', 'admin', 1);
