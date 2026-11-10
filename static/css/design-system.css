@@ -1,4 +1,4 @@
-﻿/* ==============================================================================
+/* ==============================================================================
    EduTrack DESIGN SYSTEM
    Premium Black + Lime Green Academic Management Platform
    ============================================================================== */
@@ -6,7 +6,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  /* Color Palette */
+  /* Default Dark Mode Palette */
   --bg-main: #090A0C;
   --bg-secondary: #141619;
   --bg-card: #1B1E21;
@@ -44,6 +44,59 @@
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
+}
+
+/* Light Theme Variables */
+[data-theme="light"] {
+  --bg-main: #F8FAFC;
+  --bg-secondary: #EDF2F7;
+  --bg-card: #FFFFFF;
+  --bg-hover: #F1F5F9;
+  --border-color: #E2E8F0;
+  --border-light: #CBD5E1;
+
+  --accent-primary: #15803D;
+  --accent-hover: #166534;
+  --accent-dark: #DCFCE7;
+  --accent-glow: rgba(22, 163, 74, 0.15);
+
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+
+  --color-success: #15803D;
+  --color-danger: #DC2626;
+  --color-danger-bg: rgba(220, 38, 38, 0.1);
+  --color-warning: #D97706;
+  --color-warning-bg: rgba(217, 119, 6, 0.1);
+  --color-info: #0284C7;
+  --color-info-bg: rgba(2, 132, 199, 0.1);
+}
+
+/* Smooth transition when switching themes */
+body {
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+.theme-toggle-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  border-radius: var(--radius-pill);
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.theme-toggle-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-light);
 }
 
 *, *::before, *::after {

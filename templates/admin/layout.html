@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/portal.css') }}">
@@ -83,7 +83,10 @@
         <button id="sidebar-toggle" class="btn btn-outline btn-sm mobile-menu-btn" style="display: none;" aria-label="Toggle navigation">&#9776;</button>
         <div class="topbar-title">{% block page_title %}Administrative Control Portal{% endblock %}</div>
       </div>
-      <div class="topbar-tools">
+      <div class="topbar-tools" style="display: flex; align-items: center; gap: 12px;">
+        <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" title="Switch Light/Dark Mode">
+          ☀️ Light Mode
+        </button>
         <a href="{{ url_for('public.index') }}" target="_blank" class="btn btn-outline btn-sm">View Live Site &rarr;</a>
       </div>
     </header>

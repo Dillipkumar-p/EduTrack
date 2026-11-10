@@ -14,7 +14,12 @@
         <img src="{{ url_for('static', filename='images/default-logo.svg') }}" alt="EduTrack" style="height: 30px;">
       {% endif %}
     </a>
-    <a href="{{ url_for('public.index') }}" class="btn btn-outline btn-sm">Return to Public Site</a>
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <button type="button" class="theme-toggle-btn" onclick="toggleTheme()" title="Switch Light/Dark Mode">
+        ☀️ Light Mode
+      </button>
+      <a href="{{ url_for('public.index') }}" class="btn btn-outline btn-sm">Return to Public Site</a>
+    </div>
   </header>
 
   <!-- Login Card Centered -->
@@ -68,6 +73,16 @@
         <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 0.95rem; margin-top: 10px;">
           Authenticate &amp; Enter
         </button>
+
+        <div style="display: flex; align-items: center; gap: 12px; margin: 18px 0 10px 0;">
+          <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
+          <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Or Explore</span>
+          <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
+        </div>
+
+        <a href="{{ url_for('auth.demo_login') }}" class="btn btn-outline" style="width: 100%; padding: 10px; font-size: 0.9rem; text-align: center; border-color: var(--accent-primary); color: var(--accent-primary); display: flex; align-items: center; justify-content: center; gap: 6px;">
+          <span>⚡ Launch Instant Student Demo</span>
+        </a>
       </form>
 
       <div style="margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">

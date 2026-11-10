@@ -45,7 +45,7 @@ def dashboard():
     assigned_subjects = execute_query(assigned_sql, (teacher_id,), fetch="all") or []
 
     # Total students count
-    total_students = execute_query("SELECT COUNT(*) AS c FROM students", fetch="val") or 0
+    total_students = execute_query("SELECT COUNT(*) AS c FROM students WHERE roll_no != 'DEMO2026MBU'", fetch="val") or 0
 
     # Analytics for student alerts
     analytics = get_institutional_analytics()
@@ -58,7 +58,7 @@ def dashboard():
         JOIN students s ON m.student_id = s.student_id
         JOIN subjects sub ON m.subject_id = sub.subject_id
         JOIN examinations e ON m.exam_id = e.exam_id
-        WHERE m.entered_by = %s
+        WHERE m.entered_by = %s AND s.roll_no != 'DEMO2026MBU'
         ORDER BY m.created_at DESC LIMIT 8
     """
     recent_marks = execute_query(recent_marks_sql, (session.get("user_id"),), fetch="all") or []
@@ -82,7 +82,7 @@ def students():
     sql = """
         SELECT s.student_id, s.roll_no, s.full_name, s.email, s.phone, s.section, s.batch_year
         FROM students s
-        WHERE 1=1
+        WHERE s.roll_no != 'DEMO2026MBU'
     """
     params = []
     if search:
@@ -289,7 +289,7 @@ def marks():
         JOIN students s ON m.student_id = s.student_id
         JOIN subjects sub ON m.subject_id = sub.subject_id
         JOIN examinations e ON m.exam_id = e.exam_id
-        WHERE 1=1
+        WHERE s.roll_no != 'DEMO2026MBU'
     """
     params = []
     if exam_filter:
@@ -309,7 +309,7 @@ def marks():
     sql += " ORDER BY m.created_at DESC LIMIT 100"
 
     marks_list = execute_query(sql, tuple(params), fetch="all") or []
-    all_students = execute_query("SELECT student_id, roll_no, full_name, section FROM students ORDER BY roll_no ASC", fetch="all") or []
+    all_students = execute_query("SELECT student_id, roll_no, full_name, section FROM students WHERE roll_no != 'DEMO2026MBU' ORDER BY roll_no ASC", fetch="all") or []
     all_subjects = execute_query("SELECT subject_id, subject_code, subject_name, max_marks FROM subjects WHERE is_active = 1 ORDER BY subject_name ASC", fetch="all") or []
     all_exams = execute_query("SELECT exam_id, exam_code, exam_name, exam_type, default_max_marks, default_pass_marks FROM examinations WHERE is_active = 1 ORDER BY exam_id ASC", fetch="all") or []
     sections = execute_query("SELECT DISTINCT section FROM students ORDER BY section ASC", fetch="all") or []
@@ -406,7 +406,7 @@ def export_marks_excel():
         JOIN students s ON m.student_id = s.student_id
         JOIN subjects sub ON m.subject_id = sub.subject_id
         JOIN examinations e ON m.exam_id = e.exam_id
-        WHERE 1=1
+        WHERE s.roll_no != 'DEMO2026MBU'
     """
     params = []
     if section_filter and section_filter != "All":

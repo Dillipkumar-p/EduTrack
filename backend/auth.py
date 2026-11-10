@@ -164,6 +164,94 @@ def login():
 
     return render_template("auth/login.html")
 
+@auth_bp.route("/demo")
+def demo_login():
+    """
+    Instant one-click demo login.
+    Privacy Guarantee: Exclusively uses an isolated dummy student profile ('DEMO2026MBU')
+    so real enrolled students' personal details and marks remain 100% confidential.
+    """
+    demo_roll = "DEMO2026MBU"
+
+    # 1. Look for the dedicated privacy dummy student
+    student = execute_query(
+        """SELECT s.student_id, s.roll_no, s.full_name, s.section, u.user_id, u.username, u.email, u.role
+           FROM students s
+           JOIN users u ON s.user_id = u.user_id
+           WHERE s.roll_no = %s
+           LIMIT 1""",
+        (demo_roll,),
+        fetch="one"
+    )
+
+    # 2. Auto-provision dummy student if not yet initialized in the active database
+    if not student:
+        demo_email = "demo.student@edutrack.edu"
+        demo_pwd_hash = generate_password_hash("DemoStudent@2026")
+
+        u_res = execute_query(
+            """INSERT INTO users (username, email, password_hash, role, is_active)
+               VALUES (%s, %s, %s, 'student', 1)
+               ON DUPLICATE KEY UPDATE email=VALUES(email), is_active=1""",
+            (demo_roll, demo_email, demo_pwd_hash),
+            commit=True
+        )
+        u_id = execute_query("SELECT user_id FROM users WHERE username = %s", (demo_roll,), fetch="val")
+
+        execute_query(
+            """INSERT INTO students (user_id, roll_no, full_name, email, phone, section, batch_year)
+               VALUES (%s, %s, 'Demo Student (K. Nanda Kesavan)', %s, '+91 98765 00000', 'A', '2024-2028')
+               ON DUPLICATE KEY UPDATE full_name=VALUES(full_name), email=VALUES(email)""",
+            (u_id, demo_roll, demo_email),
+            commit=True
+        )
+        s_id = execute_query("SELECT student_id FROM students WHERE user_id = %s", (u_id,), fetch="val")
+
+        # Seed comprehensive sample marks across all active courses and exam tiers
+        subs = execute_query("SELECT subject_id FROM subjects WHERE is_active = 1", fetch="all") or []
+        exams = execute_query("SELECT exam_id, exam_type, default_max_marks, default_pass_marks FROM examinations WHERE is_active = 1", fetch="all") or []
+
+        for sub in subs:
+            for ex in exams:
+                is_internal = ex["exam_type"] in ("internal_1", "internal_2")
+                max_m = 50 if is_internal else 100
+                pass_m = 20 if is_internal else 40
+                score = 44.5 if is_internal else 88.0
+                execute_query(
+                    """INSERT INTO marks (student_id, subject_id, exam_id, marks_obtained, max_marks, pass_marks, remarks, entered_by)
+                       VALUES (%s, %s, %s, %s, %s, %s, 'Demonstrated excellent academic proficiency', %s)
+                       ON DUPLICATE KEY UPDATE marks_obtained=VALUES(marks_obtained)""",
+                    (s_id, sub["subject_id"], ex["exam_id"], score, max_m, pass_m, u_id),
+                    commit=True
+                )
+
+        student = {
+            "user_id": u_id,
+            "username": demo_roll,
+            "email": demo_email,
+            "role": "student",
+            "student_id": s_id,
+            "roll_no": demo_roll,
+            "full_name": "Demo Student (K. Nanda Kesavan)",
+            "section": "A"
+        }
+
+    session.clear()
+    session["user_id"] = student["user_id"]
+    session["username"] = student["username"]
+    session["email"] = student["email"]
+    session["role"] = "student"
+    session["student_id"] = student["student_id"]
+    session["roll_no"] = student["roll_no"]
+    session["full_name"] = student["full_name"]
+    session["section"] = student["section"]
+    session["is_demo"] = True
+    session.permanent = True
+
+    log_audit("DEMO_STUDENT_ACCESSED", target_type="user", target_id=student["user_id"], details="Visitor explored isolated dummy student demo")
+    flash(f"Welcome to the Interactive Student Demo as {student['full_name']} ({student['roll_no']})!", "info")
+    return redirect(url_for("student.dashboard"))
+
 @auth_bp.route("/logout")
 def logout():
     user_id = session.get("user_id")

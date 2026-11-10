@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -12,6 +12,16 @@
   <!-- Core Design System -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/design-system.css') }}">
   {% block extra_css %}{% endblock %}
+
+  <!-- Early theme initialization to avoid flash of wrong theme -->
+  <script>
+    (function() {
+      try {
+        var savedTheme = localStorage.getItem('edutrack_theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } catch (e) {}
+    })();
+  </script>
 
   <!-- Custom Brand Accent Override if configured by Admin -->
   {% if settings.primary_accent_color and settings.primary_accent_color != '#C8F169' %}
